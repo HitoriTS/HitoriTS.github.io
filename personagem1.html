@@ -2,33 +2,32 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Personagem 1 - Lúcio</title>
     
-    <!-- Pré-carregar tudo -->
-    <link rel="preload" href="https://aframe.io/releases/1.5.0/aframe.min.js" as="script">
-    <link rel="preload" href="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js" as="script">
-    <link rel="preload" href="imagens/image1.png" as="image">
-    
-    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
-    
+    <!-- CSS primeiro -->
     <style>
         body { 
             margin: 0; 
             padding: 0;
             overflow: hidden;
-            background: #000;
+            background: #000000;
             font-family: Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
         
-        .loading {
+        #loading {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
             color: white;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             z-index: 10000;
         }
         
@@ -38,91 +37,181 @@
             border: none;
             padding: 15px 30px;
             border-radius: 25px;
-            font-size: 18px;
+            font-size: 16px;
             margin-top: 20px;
             cursor: pointer;
         }
         
-        #a-scene {
+        #ar-container {
             position: fixed;
             width: 100%;
             height: 100%;
             top: 0;
             left: 0;
+            display: none;
+        }
+        
+        .info-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 350px;
+            z-index: 10001;
+            text-align: center;
+            border: 2px solid #4285f4;
+        }
+        
+        .close-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <div class="loading" id="loading">
-        <h2>🔄 Carregando Realidade Aumentada</h2>
-        <p>Permita o acesso à câmera quando solicitado</p>
-        <button class="permission-btn" onclick="initAR()">Ativar Câmera</button>
+    <!-- Tela de Loading -->
+    <div id="loading">
+        <h2>🎮 Realidade Aumentada</h2>
+        <p>Clique para ativar a câmera</p>
+        <button class="permission-btn" onclick="startAR()">📷 Ativar Câmera</button>
     </div>
 
-    <div id="a-scene"></div>
+    <!-- Container da RA -->
+    <div id="ar-container">
+        <a-scene 
+            embedded
+            mindar-image="imageTargetSrc: imagens/image1.png; autoStart: true; maxTrack: 1;"
+            vr-mode-ui="enabled: false"
+            device-orientation-permission-ui="enabled: false"
+            renderer="colorManagement: true; precision: low;"
+        >
+            <a-camera 
+                active="true" 
+                position="0 0 0" 
+                look-controls="enabled: false"
+                cursor="rayOrigin: mouse"
+            ></a-camera>
 
+            <a-entity mindar-image-target="targetIndex: 0">
+                <a-image 
+                    src="imagens/image1.png" 
+                    position="0 0 0" 
+                    scale="0.4 0.5 1" 
+                    rotation="0 0 0"
+                    class="clickable"
+                >
+                    <!-- Botão História -->
+                    <a-ring 
+                        color="#0099ff" 
+                        radius-inner="0.05" 
+                        radius-outer="0.08" 
+                        position="0.2 0.2 0.1"
+                        class="clickable" 
+                        data-info="historia"
+                    >
+                        <a-text value="📖" position="0 0 0.01" align="center" scale="1.5 1.5 1"></a-text>
+                    </a-ring>
+                    
+                    <!-- Botão Idade -->
+                    <a-ring 
+                        color="#ff9900" 
+                        radius-inner="0.05" 
+                        radius-outer="0.08" 
+                        position="0.2 -0.2 0.1"
+                        class="clickable" 
+                        data-info="idade"
+                    >
+                        <a-text value="🎂" position="0 0 0.01" align="center" scale="1.5 1.5 1"></a-text>
+                    </a-ring>
+                </a-image>
+            </a-entity>
+        </a-scene>
+    </div>
+
+    <!-- Painéis de Informação -->
+    <div id="historia" class="info-panel">
+        <h3>📖 História</h3>
+        <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares dos perigos da cidade.</p>
+        <button class="close-btn" onclick="hideInfo()">Fechar</button>
+    </div>
+
+    <div id="idade" class="info-panel">
+        <h3>🎂 Idade</h3>
+        <p>18 anos</p>
+        <button class="close-btn" onclick="hideInfo()">Fechar</button>
+    </div>
+
+    <!-- JavaScript -->
     <script>
-        let arScene = null;
-        
-        function initAR() {
-            document.getElementById('loading').innerHTML = '<h2>📷 Ativando câmera...</h2>';
+        // Função para iniciar a RA
+        function startAR() {
+            console.log('🚀 Iniciando RA...');
+            document.getElementById('loading').innerHTML = '<h2>📷 Ativando câmera...</h2><p>Aguarde...</p>';
             
-            // Criar cena programaticamente
-            arScene = document.createElement('a-scene');
-            arScene.setAttribute('mindar-image', 'imageTargetSrc: imagens/image1.png; autoStart: true;');
-            arScene.setAttribute('embedded', '');
-            arScene.setAttribute('color-space', 'sRGB');
-            arScene.setAttribute('renderer', 'colorManagement: true; precision: low;');
-            arScene.setAttribute('vr-mode-ui', 'enabled: false');
-            
-            // Assets
-            const assets = document.createElement('a-assets');
-            const img = document.createElement('img');
-            img.setAttribute('id', 'card1');
-            img.setAttribute('src', 'imagens/image1.png');
-            assets.appendChild(img);
-            
-            // Camera
-            const camera = document.createElement('a-camera');
-            camera.setAttribute('active', 'true');
-            camera.setAttribute('position', '0 0 0');
-            camera.setAttribute('look-controls', 'enabled: false');
-            
-            // Entity
-            const entity = document.createElement('a-entity');
-            entity.setAttribute('mindar-image-target', 'targetIndex: 0');
-            
-            const image = document.createElement('a-image');
-            image.setAttribute('src', '#card1');
-            image.setAttribute('position', '0 0 0');
-            image.setAttribute('scale', '0.3 0.4 1');
-            
-            entity.appendChild(image);
-            arScene.appendChild(assets);
-            arScene.appendChild(camera);
-            arScene.appendChild(entity);
-            
-            document.getElementById('a-scene').appendChild(arScene);
-            
-            // Event listeners
-            arScene.addEventListener('loaded', function() {
-                document.getElementById('loading').style.display = 'none';
-                console.log('✅ RA Carregada!');
-            });
-            
-            arScene.addEventListener('error', function(e) {
-                console.error('❌ Erro:', e);
+            // Solicitar permissão da câmera primeiro
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function(stream) {
+                        console.log('✅ Câmera permitida!');
+                        // Parar a stream temporária
+                        stream.getTracks().forEach(track => track.stop());
+                        
+                        // Iniciar a cena AR
+                        setTimeout(function() {
+                            document.getElementById('ar-container').style.display = 'block';
+                            document.getElementById('loading').style.display = 'none';
+                            
+                            // Forçar redimensionamento
+                            window.dispatchEvent(new Event('resize'));
+                        }, 1000);
+                    })
+                    .catch(function(error) {
+                        console.error('❌ Erro na câmera:', error);
+                        document.getElementById('loading').innerHTML = 
+                            '<h2>❌ Erro de câmera</h2><p>Permita o acesso à câmera nas configurações</p>';
+                    });
+            } else {
                 document.getElementById('loading').innerHTML = 
-                    '<h2>❌ Erro ao carregar</h2><p>Recarregue a página</p>';
+                    '<h2>❌ Navegador incompatível</h2><p>Use Chrome ou Safari</p>';
+            }
+        }
+
+        // Esconder loading quando a cena carregar
+        document.querySelector('a-scene').addEventListener('loaded', function() {
+            console.log('✅ Cena AR carregada!');
+        });
+
+        // Mostrar informações
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('clickable')) {
+                const infoType = e.target.getAttribute('data-info');
+                if (infoType) {
+                    document.getElementById(infoType).style.display = 'block';
+                }
+            }
+        });
+
+        function hideInfo() {
+            document.querySelectorAll('.info-panel').forEach(panel => {
+                panel.style.display = 'none';
             });
         }
-        
-        // Iniciar automaticamente se já tem permissão
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(() => initAR())
-                .catch(() => console.log('Aguardando permissão...'));
-        }
+
+        // Debug
+        window.addEventListener('error', function(e) {
+            console.error('Erro global:', e.error);
+        });
     </script>
 </body>
 </html>
