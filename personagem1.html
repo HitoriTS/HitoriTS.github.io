@@ -1,50 +1,83 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
-  <title>Personagem 1</title>
-
-  <!-- A-Frame recente -->
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-  <!-- AR.js atual (NÃO use rawgit) -->
-  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
-
-  <style>body{margin:0;overflow:hidden}</style>
+    <meta charset="utf-8">
+    <title>Personagem 1</title>
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; }
+        .info-panel {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 1000;
+        }
+    </style>
 </head>
 <body>
-  <a-scene
-    embedded
-    vr-mode-ui="enabled: false"
-    renderer="logarithmicDepthBuffer: true"
-    arjs="sourceType: webcam; debugUIEnabled: false"
-  >
-    <!-- Tudo que deve aparecer em RA vai DENTRO do marker -->
-    <a-marker preset="hiro">
+    <a-scene mindar-image embedded color-space="sRGB" renderer="colorManagement: true" vr-mode-ui="enabled: false">
+        
+        <a-assets>
+            <img id="card" src="imagens/image1.png">
+        </a-assets>
 
-      <!-- Carta (perto do centro do marcador) -->
-      <a-image src="imagens/image1.png" position="0 0.5 0" scale="1.2 1.6 1"></a-image>
+        <a-camera active="true" position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Botão clicável -->
-      <a-plane id="btnHistoria" position="0 -0.1 0" width="1.2" height="0.3" color="#333">
-        <a-text value="Mostrar história" align="center" position="0 0 0.01" width="1.8" color="#fff"></a-text>
-      </a-plane>
+        <a-entity mindar-image-target="targetIndex: 0">
+            <!-- Carta principal -->
+            <a-image src="#card" position="0 0 0" scale="0.5 0.7 1" rotation="0 0 0">
+                <!-- Botões de informação -->
+                <a-text value="ℹ️" position="0.3 0.3 0.1" scale="0.5 0.5 1" 
+                        class="clickable" data-info="historia"></a-text>
+                <a-text value="🎂" position="0.3 0.1 0.1" scale="0.5 0.5 1"
+                        class="clickable" data-info="idade"></a-text>
+                <a-text value="⚡" position="0.3 -0.1 0.1" scale="0.5 0.5 1"
+                        class="clickable" data-info="habilidade"></a-text>
+            </a-image>
+        </a-entity>
 
-      <!-- Bloco com os textos (começa invisível) -->
-      <a-entity id="info" visible="false">
-        <a-text value="Idade: 18" position="-0.8 0.9 0" width="2" color="cyan"></a-text>
-        <a-text value="História: Lúcio aprendeu invisibilidade..." position="-0.8 0.6 0" width="2.2" color="lime"></a-text>
-        <a-text value="Habilidade: Invisibilidade" position="-0.8 0.3 0" width="2" color="yellow"></a-text>
-        <a-text value="Frase: 'Ninguém me vê!'" position="-0.8 0.0 0" width="2" color="orange"></a-text>
-      </a-entity>
+    </a-scene>
 
-    </a-marker>
+    <!-- Painéis de informação -->
+    <div id="historia" class="info-panel">
+        <h3>História</h3>
+        <p>Lúcio aprendeu invisibilidade para proteger seus amigos</p>
+        <button onclick="hideInfo()">Fechar</button>
+    </div>
 
-    <!-- Câmera + cursor para reconhecer cliques/toques -->
-    <a-entity camera look-controls cursor="rayOrigin: mouse"></a-entity>
-  </a-scene>
+    <div id="idade" class="info-panel">
+        <h3>Idade</h3>
+        <p>18 anos</p>
+        <button onclick="hideInfo()">Fechar</button>
+    </div>
 
-  <!-- Script externo -->
-  <script src="scripts/interatividade.js"></script>
+    <div id="habilidade" class="info-panel">
+        <h3>Habilidade</h3>
+        <p>Invisibilidade</p>
+        <button onclick="hideInfo()">Fechar</button>
+    </div>
+
+    <script>
+        // Mostrar informações ao clicar nos ícones
+        document.querySelectorAll('.clickable').forEach(item => {
+            item.addEventListener('click', () => {
+                const infoType = item.getAttribute('data-info');
+                document.getElementById(infoType).style.display = 'block';
+            });
+        });
+
+        function hideInfo() {
+            document.querySelectorAll('.info-panel').forEach(panel => {
+                panel.style.display = 'none';
+            });
+        }
+    </script>
 </body>
 </html>
