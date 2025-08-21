@@ -6,7 +6,21 @@
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
     <style>
-        body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; }
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            font-family: Arial, sans-serif;
+            background: black;
+        }
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            text-align: center;
+            z-index: 1000;
+        }
         .info-panel {
             display: none;
             position: absolute;
@@ -34,7 +48,20 @@
     </style>
 </head>
 <body>
-    <a-scene mindar-image embedded mindar-image-targets="targets.mind" color-space="sRGB" renderer="colorManagement: true" vr-mode-ui="enabled: false">
+    <div class="loading" id="loading">
+        <h2>Carregando realidade aumentada...</h2>
+        <p>Por favor, aguarde e permita o acesso à câmera</p>
+    </div>
+
+    <a-scene 
+        mindar-image 
+        embedded 
+        image-target-src="imagens/image1.png"
+        color-space="sRGB" 
+        renderer="colorManagement: true, precision: medium"
+        vr-mode-ui="enabled: false"
+        device-orientation-permission-ui="enabled: false"
+    >
         
         <a-assets>
             <img id="card1" src="imagens/image1.png">
@@ -43,23 +70,13 @@
         <a-camera active="true" position="0 0 0" look-controls="enabled: false"></a-camera>
 
         <a-entity mindar-image-target="targetIndex: 0">
-            <!-- Carta principal -->
-            <a-image src="#card1" position="0 0 0" scale="0.5 0.7 1" rotation="0 0 0">
-                <!-- Botões de informação -->
-                <a-circle position="0.2 0.2 0.1" radius="0.08" color="#0099ff" class="clickable" data-info="historia">
-                    <a-text value="📖" position="0 0 0.01" align="center" scale="1.5 1.5 1"></a-text>
+            <a-image src="#card1" position="0 0 0" scale="0.3 0.4 1" rotation="0 0 0">
+                <a-circle position="0.15 0.15 0.1" radius="0.06" color="#0099ff" class="clickable" data-info="historia">
+                    <a-text value="📖" position="0 0 0.01" align="center" scale="1.2 1.2 1"></a-text>
                 </a-circle>
                 
-                <a-circle position="0.2 -0.1 0.1" radius="0.08" color="#ff9900" class="clickable" data-info="idade">
-                    <a-text value="🎂" position="0 0 0.01" align="center" scale="1.5 1.5 1"></a-text>
-                </a-circle>
-                
-                <a-circle position="-0.2 0.2 0.1" radius="0.08" color="#00cc66" class="clickable" data-info="habilidade">
-                    <a-text value="⚡" position="0 0 0.01" align="center" scale="1.5 1.5 1"></a-text>
-                </a-circle>
-                
-                <a-circle position="-0.2 -0.1 0.1" radius="0.08" color="#cc3366" class="clickable" data-info="frase">
-                    <a-text value="💬" position="0 0 0.01" align="center" scale="1.5 1.5 1"></a-text>
+                <a-circle position="0.15 -0.15 0.1" radius="0.06" color="#ff9900" class="clickable" data-info="idade">
+                    <a-text value="🎂" position="0 0 0.01" align="center" scale="1.2 1.2 1"></a-text>
                 </a-circle>
             </a-image>
         </a-entity>
@@ -69,7 +86,7 @@
     <!-- Painéis de informação -->
     <div id="historia" class="info-panel">
         <h3>📖 História</h3>
-        <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares dos perigos da cidade. Desde criança, ele demonstrava habilidades especiais de camuflagem.</p>
+        <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares.</p>
         <button class="close-btn" onclick="hideInfo()">Fechar</button>
     </div>
 
@@ -79,19 +96,12 @@
         <button class="close-btn" onclick="hideInfo()">Fechar</button>
     </div>
 
-    <div id="habilidade" class="info-panel">
-        <h3>⚡ Habilidade</h3>
-        <p>Invisibilidade Total - Pode se tornar completamente invisível por até 10 minutos</p>
-        <button class="close-btn" onclick="hideInfo()">Fechar</button>
-    </div>
-
-    <div id="frase" class="info-panel">
-        <h3>💬 Frase</h3>
-        <p>"Ninguém me vê, mas eu vejo tudo!"</p>
-        <button class="close-btn" onclick="hideInfo()">Fechar</button>
-    </div>
-
     <script>
+        // Esconder loading quando carregado
+        document.querySelector('a-scene').addEventListener('loaded', function() {
+            document.getElementById('loading').style.display = 'none';
+        });
+
         // Mostrar informações ao clicar nos ícones
         document.querySelectorAll('.clickable').forEach(item => {
             item.addEventListener('click', () => {
@@ -106,11 +116,11 @@
             });
         }
 
-        // Também fechar clicando fora do painel
-        document.querySelectorAll('.info-panel').forEach(panel => {
-            panel.addEventListener('click', (e) => {
-                if (e.target === panel) hideInfo();
-            });
+        // Debug: verificar se há erros
+        window.addEventListener('error', function(e) {
+            console.error('Erro:', e.error);
+            document.getElementById('loading').innerHTML = 
+                '<h2>Erro ao carregar</h2><p>Recarregue a página</p>';
         });
     </script>
 </body>
