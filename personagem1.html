@@ -1,79 +1,187 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personagem 1 - RA Teste</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Personagem 1 - RA com QR</title>
+    
+    <!-- Bibliotecas NECESSÁRIAS -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
+    
     <style>
         body { 
             margin: 0; 
-            padding: 20px; 
-            background: #000; 
-            color: white; 
+            overflow: hidden; 
+            background: #000;
+            font-family: Arial, sans-serif;
+        }
+        
+        /* Loading screen */
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
             text-align: center;
-            font-family: Arial;
+            z-index: 1000;
+            background: rgba(0,0,0,0.9);
+            padding: 30px;
+            border-radius: 20px;
         }
-        .btn { 
-            background: #4285f4; 
-            color: white; 
-            padding: 15px 30px; 
-            border: none; 
-            border-radius: 10px; 
-            margin: 10px; 
+        
+        .start-btn {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            margin-top: 20px;
             cursor: pointer;
+            font-size: 16px;
         }
-        #camera-container { 
-            width: 100%; 
-            max-width: 400px; 
-            margin: 20px auto; 
-            border: 3px solid #4285f4;
+        
+        /* Info panels */
+        .info-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 20px;
             border-radius: 15px;
-            overflow: hidden;
+            width: 80%;
+            max-width: 400px;
+            z-index: 1001;
+            text-align: center;
         }
-        #camera-feed { width: 100%; }
-        .card { 
-            background: #333; 
-            padding: 20px; 
-            border-radius: 15px; 
-            margin: 20px auto; 
-            max-width: 300px;
+        
+        .close-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <h1>🎮 TESTE DE REALIDADE AUMENTADA</h1>
-    <p>Clique para testar a câmera</p>
-    
-    <button class="btn" onclick="startCamera()">📷 TESTAR CÂMERA</button>
-    
-    <div id="camera-container" style="display: none;">
-        <video id="camera-feed" autoplay playsinline></video>
-    </div>
-    
-    <div class="card">
-        <h2>LÚCIO</h2>
-        <p>Idade: 18 anos</p>
-        <p>Habilidade: Invisibilidade</p>
-        <button class="btn" onclick="alert('História do personagem...')">📖 Ver História</button>
-    </div>
+<!-- Tela de Loading -->
+<div id="loading">
+    <h2>🎮 REALIDADE AUMENTADA</h2>
+    <p>Escaneie o QR code Hiro Marker</p>
+    <p style="font-size: 14px; color: #ccc;">Mostre o marcador para a câmera</p>
+    <button class="start-btn" onclick="hideLoading()">INICIAR EXPERIÊNCIA</button>
+</div>
 
-    <script>
-    function startCamera() {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(function(stream) {
-                    document.getElementById('camera-feed').srcObject = stream;
-                    document.getElementById('camera-container').style.display = 'block';
-                })
-                .catch(function(error) {
-                    alert('Erro: ' + error.message);
-                });
-        } else {
-            alert('Navegador não suporta câmera');
-        }
-    }
-    </script>
+<!-- Cena AR -->
+<a-scene 
+    vr-mode-ui="enabled: false"
+    arjs="sourceType: webcam; debugUIEnabled: false;"
+    renderer="logarithmicDepthBuffer: true;"
+    embedded
+>
+    
+    <!-- Marcador HIRO (QR code pattern) -->
+    <a-marker type="pattern" preset="hiro">
+        
+        <!-- Carta do Personagem -->
+        <a-entity position="0 0 0">
+            <!-- Imagem de fundo -->
+            <a-image 
+                src="imagens/image1.png" 
+                position="0 0.5 0" 
+                width="1.2" 
+                height="1.6"
+            ></a-image>
+            
+            <!-- Botões de Informação -->
+            <a-circle 
+                position="0.5 0.2 0.1" 
+                radius="0.1" 
+                color="#0099ff"
+                onclick="showInfo('historia')"
+                cursor="rayOrigin: mouse"
+            >
+                <a-text value="📖" position="0 0 0.01" align="center" scale="2 2 1"></a-text>
+            </a-circle>
+            
+            <a-circle 
+                position="0.5 -0.1 0.1" 
+                radius="0.1" 
+                color="#ff9900"
+                onclick="showInfo('idade')"
+                cursor="rayOrigin: mouse"
+            >
+                <a-text value="🎂" position="0 0 0.01" align="center" scale="2 2 1"></a-text>
+            </a-circle>
+            
+            <a-circle 
+                position="0.5 -0.4 0.1" 
+                radius="0.1" 
+                color="#00cc66"
+                onclick="showInfo('habilidade')"
+                cursor="rayOrigin: mouse"
+            >
+                <a-text value="⚡" position="0 0 0.01" align="center" scale="2 2 1"></a-text>
+            </a-circle>
+        </a-entity>
+        
+    </a-marker>
+    
+    <!-- Câmera -->
+    <a-entity camera></a-entity>
+    
+</a-scene>
+
+<!-- Painéis de Informação -->
+<div id="historia" class="info-panel">
+    <h3>📖 HISTÓRIA</h3>
+    <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares dos perigos da cidade.</p>
+    <button class="close-btn" onclick="hideInfo()">FECHAR</button>
+</div>
+
+<div id="idade" class="info-panel">
+    <h3>🎂 IDADE</h3>
+    <p>18 anos</p>
+    <button class="close-btn" onclick="hideInfo()">FECHAR</button>
+</div>
+
+<div id="habilidade" class="info-panel">
+    <h3>⚡ HABILIDADE</h3>
+    <p>Invisibilidade Total - Pode ficar invisível por até 10 minutos</p>
+    <button class="close-btn" onclick="hideInfo()">FECHAR</button>
+</div>
+
+<script>
+// Esconder loading
+function hideLoading() {
+    document.getElementById('loading').style.display = 'none';
+}
+
+// Mostrar informações
+function showInfo(type) {
+    document.getElementById(type).style.display = 'block';
+}
+
+// Esconder informações
+function hideInfo() {
+    document.querySelectorAll('.info-panel').forEach(panel => {
+        panel.style.display = 'none';
+    });
+}
+
+// Iniciar automaticamente em dispositivos móveis
+if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    hideLoading();
+}
+</script>
 
 </body>
 </html>
