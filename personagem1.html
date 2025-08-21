@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personagem 1 - RA Completa</title>
+    <title>Personagem 1 - RA Completa (Corrigido)</title>
     
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -197,7 +197,7 @@
         
         <div class="marker-img">H</div>
         
-        <button class="btn" onclick="startAR()">📷 INICIAR CÂMERA</button>
+        <button class="btn" id="start-button">📷 INICIAR CÂMERA</button>
         
         <p>Certifique-se de permitir o acesso à sua câmera</p>
     </div>
@@ -314,90 +314,134 @@
 </div>
 
 <script>
-// Elementos
-const loading = document.getElementById('loading');
-const arScene = document.getElementById('ar-scene');
-const errorStatus = document.querySelector('.error-status');
-
-// Função para iniciar a realidade aumentada
-async function startAR() {
-    try {
-        errorStatus.innerHTML = '<strong>Status:</strong> Solicitando acesso à câmera...';
-        
-        // Testar câmera primeiro
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { 
-                facingMode: 'environment',
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            } 
-        });
-        
-        // Parar teste
-        stream.getTracks().forEach(track => track.stop());
-        
-        // IniciAR AR
-        arScene.style.display = 'block';
-        loading.style.display = 'none';
-        
-        // Forçar botões visíveis após carregamento
-        setTimeout(forceButtonsVisible, 2000);
-        
-    } catch (error) {
-        console.error('Erro na câmera:', error);
-        errorStatus.innerHTML = `<strong>Erro:</strong> Não foi possível acessar a câmera (${error.message})`;
-        alert('Erro ao acessar câmera. Verifique as permissões do navegador.');
+// Aguarda o carregamento completo do DOM antes de executar o código
+document.addEventListener('DOMContentLoaded', function() {
+    // Elementos - usando seletores mais específicos para evitar null
+    const loading = document.getElementById('loading');
+    const arScene = document.getElementById('ar-scene');
+    const errorStatus = document.querySelector('.error-status');
+    const startButton = document.getElementById('start-button');
+    
+    // Verifica se os elementos existem antes de adicionar event listeners
+    if (startButton) {
+        startButton.addEventListener('click', startAR);
+    } else {
+        console.error('Botão de início não encontrado');
     }
-}
+    
+    // Função para iniciar a realidade aumentada
+    async function startAR() {
+        try {
+            if (errorStatus) {
+                errorStatus.innerHTML = '<strong>Status:</strong> Solicitando acesso à câmera...';
+            }
+            
+            // Testar câmera primeiro
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
+            });
+            
+            // Parar teste
+            stream.getTracks().forEach(track => track.stop());
+            
+            // IniciAR AR - verifica se os elementos existem
+            if (arScene && arScene.style) {
+                arScene.style.display = 'block';
+            }
+            
+            if (loading && loading.style) {
+                loading.style.display = 'none';
+            }
+            
+            // Forçar botões visíveis após carregamento
+            setTimeout(forceButtonsVisible, 2000);
+            
+        } catch (error) {
+            console.error('Erro na câmera:', error);
+            if (errorStatus) {
+                errorStatus.innerHTML = `<strong>Erro:</strong> Não foi possível acessar a câmera (${error.message})`;
+            }
+            alert('Erro ao acessar câmera. Verifique as permissões do navegador.');
+        }
+    }
 
-function forceButtonsVisible() {
-    const buttons = document.querySelectorAll('.ar-button');
-    buttons.forEach(button => {
-        button.setAttribute('opacity', '1');
-        button.setAttribute('visible', 'true');
+    function forceButtonsVisible() {
+        const buttons = document.querySelectorAll('.ar-button');
+        if (buttons && buttons.length > 0) {
+            buttons.forEach(button => {
+                if (button.setAttribute) {
+                    button.setAttribute('opacity', '1');
+                    button.setAttribute('visible', 'true');
+                }
+            });
+            console.log('Botões forçados a aparecer');
+        } else {
+            console.warn('Nenhum botão AR encontrado');
+        }
+    }
+
+    function showInfo(type) {
+        const panel = document.getElementById(type);
+        if (panel && panel.style) {
+            panel.style.display = 'block';
+        }
+    }
+
+    function hideInfo() {
+        const panels = document.querySelectorAll('.info-panel');
+        if (panels && panels.length > 0) {
+            panels.forEach(panel => {
+                if (panel && panel.style) {
+                    panel.style.display = 'none';
+                }
+            });
+        }
+    }
+
+    // Verificar se é mobile e atualizar a mensagem
+    if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+        setTimeout(() => {
+            if (errorStatus) {
+                errorStatus.innerHTML = '<strong>Dispositivo móvel detectado:</strong> Clique em "Iniciar Câmera" quando estiver pronto';
+            }
+        }, 1000);
+    } else if (errorStatus) {
+        errorStatus.innerHTML = '<strong>Dispositivo não móvel:</strong> A experiência AR funciona melhor em smartphones';
+    }
+
+    // Adicionar evento para detectar quando o marcador é encontrado
+    document.addEventListener('markerFound', function() {
+        console.log('Marcador Hiro detectado!');
+        if (errorStatus) {
+            errorStatus.innerHTML = '<strong>Status:</strong> Marcador detectado com sucesso!';
+        }
     });
-    console.log('Botões forçados a aparecer');
-}
 
-function showInfo(type) {
-    document.getElementById(type).style.display = 'block';
-}
-
-function hideInfo() {
-    document.querySelectorAll('.info-panel').forEach(panel => {
-        panel.style.display = 'none';
+    // Adicionar evento para detectar quando o marcador é perdido
+    document.addEventListener('markerLost', function() {
+        console.log('Marcador Hiro perdido!');
+        if (errorStatus) {
+            errorStatus.innerHTML = '<strong>Status:</strong> Aguardando detecção do marcador Hiro...';
+        }
     });
-}
 
-// Verificar se é mobile e tentar auto-iniciar
-if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-    setTimeout(() => {
-        errorStatus.innerHTML = '<strong>Dispositivo móvel detectado:</strong> Clique em "Iniciar Câmera" quando estiver pronto';
-    }, 1000);
-} else {
-    errorStatus.innerHTML = '<strong>Dispositivo não móvel:</strong> A experiência AR funciona melhor em smartphones';
-}
+    // Verificar se há erros na cena
+    if (arScene) {
+        arScene.addEventListener('loaded', function() {
+            console.log('Cena AR carregada com sucesso');
+        });
 
-// Adicionar evento para detectar quando o marcador é encontrado
-document.addEventListener('markerFound', function() {
-    console.log('Marcador Hiro detectado!');
-    errorStatus.innerHTML = '<strong>Status:</strong> Marcador detectado com sucesso!';
-});
-
-// Adicionar evento para detectar quando o marcador é perdido
-document.addEventListener('markerLost', function() {
-    console.log('Marcador Hiro perdido!');
-    errorStatus.innerHTML = '<strong>Status:</strong> Aguardando detecção do marcador Hiro...';
-});
-
-// Verificar se há erros na cena
-arScene.addEventListener('loaded', function() {
-    console.log('Cena AR carregada com sucesso');
-});
-
-arScene.addEventListener('error', function(e) {
-    console.error('Erro na cena AR:', e);
-    errorStatus.innerHTML = '<strong>Erro:</strong> Falha ao carregar a cena de realidade aumentada';
+        arScene.addEventListener('error', function(e) {
+            console.error('Erro na cena AR:', e);
+            if (errorStatus) {
+                errorStatus.innerHTML = '<strong>Erro:</strong> Falha ao carregar a cena de realidade aumentada';
+            }
+        });
+    }
 });
 </script>
 
