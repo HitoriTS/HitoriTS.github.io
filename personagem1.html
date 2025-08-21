@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Personagem 1 - RA Funcional</title>
     
-    <!-- A-Frame com CDN alternativo -->
-    <script src="https://cdn.jsdelivr.net/npm/aframe@1.5.0/dist/aframe.min.js"></script>
-    <!-- AR.js com CDN alternativo -->
-    <script src="https://cdn.jsdelivr.net/npm/ar.js@3.4.0/aframe/build/aframe-ar.min.js"></script>
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <!-- AR.js -->
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     
     <style>
         * {
@@ -22,8 +22,6 @@
             color: white;
             font-family: Arial, sans-serif;
             overflow: hidden;
-            width: 100vw;
-            height: 100vh;
         }
         
         #loading {
@@ -33,7 +31,7 @@
             transform: translate(-50%, -50%);
             text-align: center;
             z-index: 1000;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
             padding: 30px;
             border-radius: 20px;
             border: 2px solid #4285f4;
@@ -50,13 +48,16 @@
             font-size: 16px;
         }
         
-        #camera-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 100;
+        .hint {
+            font-size: 14px;
+            color: #ccc;
+            margin-top: 15px;
+        }
+        
+        .error {
+            color: #ff4444;
+            margin-top: 10px;
+            display: none;
         }
         
         /* Info panels */
@@ -86,29 +87,67 @@
             margin-top: 15px;
             cursor: pointer;
         }
-        
-        .error {
-            color: #ff4444;
-            margin-top: 10px;
-            display: none;
-        }
     </style>
 </head>
 <body>
 
 <div id="loading">
-    <h2>📱 REALIDADE AUMENTADA</h2>
-    <p>Clique para ativar a câmera e aponte para o marcador Hiro</p>
-    <button class="start-btn" onclick="startAR()">🎬 INICIAR CÂMERA</button>
+    <h2>🎯 REALIDADE AUMENTADA</h2>
+    <p>Para ver o personagem, mostre este marcador para a câmera:</p>
+    <img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" 
+         width="150" 
+         style="border: 2px solid white; margin: 10px 0;">
+    <p class="hint">(Imprima ou deixe aberto em outro dispositivo)</p>
+    <button class="start-btn" onclick="startCamera()">📷 ATIVAR CÂMERA</button>
     <div class="error" id="error-message"></div>
 </div>
 
-<div id="camera-container"></div>
+<!-- Cena AR -->
+<a-scene 
+    vr-mode-ui="enabled: false"
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
+    renderer="logarithmicDepthBuffer: true; precision: medium;"
+    embedded
+    style="display: none;"
+    id="ar-scene"
+>
+    
+    <!-- Marcador HIRO -->
+    <a-marker 
+        type="pattern" 
+        preset="hiro"
+        emitevents="true" 
+        id="hiro-marker"
+    >
+        <!-- Imagem do Personagem -->
+        <a-image 
+            src="imagens/image1.png" 
+            position="0 0.5 0" 
+            width="1.2" 
+            height="1.6"
+            rotation="0 180 0"
+            material="transparent: true; alphaTest: 0.5"
+        >
+            <!-- Botões de Informação -->
+            <a-text 
+                value="ℹ️ Toque na imagem para informações" 
+                position="0 -0.8 0" 
+                align="center" 
+                width="3"
+                color="yellow"
+            ></a-text>
+        </a-image>
+    </a-marker>
+    
+    <!-- Câmera -->
+    <a-entity camera></a-entity>
+    
+</a-scene>
 
 <!-- Painéis de Informação -->
 <div id="historia" class="info-panel">
     <h3>📖 HISTÓRIA</h3>
-    <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares.</p>
+    <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares dos perigos da cidade.</p>
     <button class="close-btn" onclick="hideInfo()">FECHAR</button>
 </div>
 
@@ -120,81 +159,67 @@
 
 <div id="habilidade" class="info-panel">
     <h3>⚡ HABILIDADE</h3>
-    <p>Invisibilidade Total - 10 minutos</p>
+    <p>Invisibilidade Total - Pode ficar invisível por até 10 minutos</p>
     <button class="close-btn" onclick="hideInfo()">FECHAR</button>
 </div>
 
 <script>
 // Elementos DOM
 const loading = document.getElementById('loading');
-const cameraContainer = document.getElementById('camera-container');
+const arScene = document.getElementById('ar-scene');
 const errorMessage = document.getElementById('error-message');
+const hiroMarker = document.getElementById('hiro-marker');
 
-// IniciAR RA
-async function startAR() {
+// Iniciar câmera
+async function startCamera() {
     try {
-        loading.innerHTML = '<h2>📷 ATIVANDO CÂMERA...</h2><p>Aguarde...</p>';
+        loading.innerHTML = '<h2>📷 ATIVANDO CÂMERA...</h2><p>Permita o acesso quando solicitado</p>';
         
-        // Verificar se tem permissão primeiro
+        // Testar permissão da câmera
         const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment' }
+            video: { 
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            } 
         });
         
         // Parar stream de teste
         stream.getTracks().forEach(track => track.stop());
         
-        // Criar cena AR programaticamente
-        createARScene();
+        // Mostrar cena AR
+        arScene.style.display = 'block';
+        loading.style.display = 'none';
+        
+        // Configurar evento de detecção
+        setupMarkerEvents();
         
     } catch (error) {
         console.error('Erro na câmera:', error);
-        showError('Não foi possível acessar a câmera. Verifique as permissões.');
+        showError('Erro ao acessar câmera: ' + error.message);
     }
 }
 
-function createARScene() {
-    // Limpar container
-    cameraContainer.innerHTML = '';
-    
-    // Criar cena manualmente
-    const scene = document.createElement('a-scene');
-    scene.setAttribute('embedded', '');
-    scene.setAttribute('vr-mode-ui', 'enabled: false');
-    scene.setAttribute('renderer', 'logarithmicDepthBuffer: true; colorManagement: true');
-    scene.setAttribute('arjs', 'sourceType: webcam; debugUIEnabled: false');
-    
-    // Adicionar marcador
-    const marker = document.createElement('a-marker');
-    marker.setAttribute('type', 'pattern');
-    marker.setAttribute('preset', 'hiro');
-    
-    // Conteúdo do marcador
-    marker.innerHTML = `
-        <a-entity position="0 0 0">
-            <a-image 
-                src="imagens/image1.png" 
-                position="0 0.5 0" 
-                width="1.2" 
-                height="1.6"
-                rotation="0 180 0"
-            ></a-image>
-        </a-entity>
-    `;
-    
-    // Adicionar câmera
-    const camera = document.createElement('a-entity');
-    camera.setAttribute('camera', '');
-    
-    // Montar cena
-    scene.appendChild(marker);
-    scene.appendChild(camera);
-    cameraContainer.appendChild(scene);
-    
-    // Esconder loading quando carregar
-    scene.addEventListener('loaded', () => {
-        loading.style.display = 'none';
-        console.log('✅ RA carregada com sucesso!');
-    });
+// Configurar eventos do marcador
+function setupMarkerEvents() {
+    if (hiroMarker) {
+        hiroMarker.addEventListener('markerFound', () => {
+            console.log('✅ Marcador Hiro detectado!');
+            // Aqui você pode adicionar feedback visual
+        });
+        
+        hiroMarker.addEventListener('markerLost', () => {
+            console.log('❌ Marcador Hiro perdido');
+        });
+        
+        // Clique na imagem para mostrar informações
+        const image = hiroMarker.querySelector('a-image');
+        if (image) {
+            image.addEventListener('click', () => {
+                showInfo('historia');
+            });
+        }
+    }
 }
 
 function showInfo(type) {
@@ -213,13 +238,18 @@ function showError(message) {
     loading.querySelector('p').textContent = 'Clique para tentar novamente';
 }
 
-// Verificar se é mobile
-if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-    // Auto-iniciar em mobile após 1s
-    setTimeout(startAR, 1000);
-}
+// Debug: verificar se tudo carregou
+window.addEventListener('load', () => {
+    console.log('🔧 Página carregada');
+    console.log('📷 AR.js carregado:', !!window.AR);
+    console.log('🎯 A-Frame carregado:', !!window.AFRAME);
+});
 
-console.log('📱 Página carregada - Pronta para RA');
+// Auto-iniciar em mobile
+if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    // Dar tempo para carregar tudo
+    setTimeout(startCamera, 2000);
+}
 </script>
 
 </body>
