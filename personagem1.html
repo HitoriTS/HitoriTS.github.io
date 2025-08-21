@@ -2,216 +2,77 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Personagem 1 - Lúcio</title>
     
-    <!-- CSS primeiro -->
     <style>
-        body { 
-            margin: 0; 
-            padding: 0;
-            overflow: hidden;
-            background: #000000;
-            font-family: Arial, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        #loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000000;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-        }
-        
-        .permission-btn {
-            background: #4285f4;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            font-size: 16px;
-            margin-top: 20px;
-            cursor: pointer;
-        }
-        
-        #ar-container {
-            position: fixed;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            display: none;
-        }
-        
-        .info-panel {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            width: 80%;
-            max-width: 350px;
-            z-index: 10001;
-            text-align: center;
-            border: 2px solid #4285f4;
-        }
-        
-        .close-btn {
-            background: #ff4444;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin-top: 15px;
-            cursor: pointer;
-        }
+        body { margin: 0; padding: 0; overflow: hidden; background: black; color: white; font-family: Arial; }
+        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .btn { background: #4285f4; color: white; border: none; padding: 15px 30px; border-radius: 25px; margin: 10px; }
+        #camera-feed { width: 100%; height: 100%; position: fixed; top: 0; left: 0; display: none; }
     </style>
 </head>
 <body>
-    <!-- Tela de Loading -->
-    <div id="loading">
-        <h2>🎮 Realidade Aumentada</h2>
-        <p>Clique para ativar a câmera</p>
-        <button class="permission-btn" onclick="startAR()">📷 Ativar Câmera</button>
-    </div>
 
-    <!-- Container da RA -->
-    <div id="ar-container">
-        <a-scene 
-            embedded
-            mindar-image="imageTargetSrc: imagens/image1.png; autoStart: true; maxTrack: 1;"
-            vr-mode-ui="enabled: false"
-            device-orientation-permission-ui="enabled: false"
-            renderer="colorManagement: true; precision: low;"
-        >
-            <a-camera 
-                active="true" 
-                position="0 0 0" 
-                look-controls="enabled: false"
-                cursor="rayOrigin: mouse"
-            ></a-camera>
+<div id="loading">
+    <h2>🎮 Realidade Aumentada</h2>
+    <button class="btn" onclick="startCamera()">📷 Ativar Câmera</button>
+    <p>Ou escaneie o QR code no celular</p>
+</div>
 
-            <a-entity mindar-image-target="targetIndex: 0">
-                <a-image 
-                    src="imagens/image1.png" 
-                    position="0 0 0" 
-                    scale="0.4 0.5 1" 
-                    rotation="0 0 0"
-                    class="clickable"
-                >
-                    <!-- Botão História -->
-                    <a-ring 
-                        color="#0099ff" 
-                        radius-inner="0.05" 
-                        radius-outer="0.08" 
-                        position="0.2 0.2 0.1"
-                        class="clickable" 
-                        data-info="historia"
-                    >
-                        <a-text value="📖" position="0 0 0.01" align="center" scale="1.5 1.5 1"></a-text>
-                    </a-ring>
-                    
-                    <!-- Botão Idade -->
-                    <a-ring 
-                        color="#ff9900" 
-                        radius-inner="0.05" 
-                        radius-outer="0.08" 
-                        position="0.2 -0.2 0.1"
-                        class="clickable" 
-                        data-info="idade"
-                    >
-                        <a-text value="🎂" position="0 0 0.01" align="center" scale="1.5 1.5 1"></a-text>
-                    </a-ring>
-                </a-image>
-            </a-entity>
-        </a-scene>
-    </div>
+<video id="camera-feed" autoplay playsinline></video>
 
-    <!-- Painéis de Informação -->
-    <div id="historia" class="info-panel">
-        <h3>📖 História</h3>
-        <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares dos perigos da cidade.</p>
-        <button class="close-btn" onclick="hideInfo()">Fechar</button>
-    </div>
-
-    <div id="idade" class="info-panel">
-        <h3>🎂 Idade</h3>
-        <p>18 anos</p>
-        <button class="close-btn" onclick="hideInfo()">Fechar</button>
-    </div>
-
-    <!-- JavaScript -->
-    <script>
-        // Função para iniciar a RA
-        function startAR() {
-            console.log('🚀 Iniciando RA...');
-            document.getElementById('loading').innerHTML = '<h2>📷 Ativando câmera...</h2><p>Aguarde...</p>';
-            
-            // Solicitar permissão da câmera primeiro
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(function(stream) {
-                        console.log('✅ Câmera permitida!');
-                        // Parar a stream temporária
-                        stream.getTracks().forEach(track => track.stop());
-                        
-                        // Iniciar a cena AR
-                        setTimeout(function() {
-                            document.getElementById('ar-container').style.display = 'block';
-                            document.getElementById('loading').style.display = 'none';
-                            
-                            // Forçar redimensionamento
-                            window.dispatchEvent(new Event('resize'));
-                        }, 1000);
-                    })
-                    .catch(function(error) {
-                        console.error('❌ Erro na câmera:', error);
-                        document.getElementById('loading').innerHTML = 
-                            '<h2>❌ Erro de câmera</h2><p>Permita o acesso à câmera nas configurações</p>';
-                    });
-            } else {
-                document.getElementById('loading').innerHTML = 
-                    '<h2>❌ Navegador incompatível</h2><p>Use Chrome ou Safari</p>';
-            }
-        }
-
-        // Esconder loading quando a cena carregar
-        document.querySelector('a-scene').addEventListener('loaded', function() {
-            console.log('✅ Cena AR carregada!');
-        });
-
-        // Mostrar informações
-        document.addEventListener('click', function(e) {
-            if (e.target.classList.contains('clickable')) {
-                const infoType = e.target.getAttribute('data-info');
-                if (infoType) {
-                    document.getElementById(infoType).style.display = 'block';
-                }
-            }
-        });
-
-        function hideInfo() {
-            document.querySelectorAll('.info-panel').forEach(panel => {
-                panel.style.display = 'none';
+<script>
+// Simulação de RA - Foco na funcionalidade primeiro
+function startCamera() {
+    document.getElementById('loading').innerHTML = '<h2>📷 Ativando câmera...</h2>';
+    
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                const video = document.getElementById('camera-feed');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                document.getElementById('loading').style.display = 'none';
+                
+                // Simular reconhecimento bem-sucedido após 3 segundos
+                setTimeout(showCharacterCard, 3000);
+            })
+            .catch(function(error) {
+                console.error('Erro na câmera:', error);
+                // Modo de demonstração sem câmera
+                showCharacterCard();
             });
-        }
+    } else {
+        // Navegador sem suporte - modo demo
+        showCharacterCard();
+    }
+}
 
-        // Debug
-        window.addEventListener('error', function(e) {
-            console.error('Erro global:', e.error);
-        });
-    </script>
+function showCharacterCard() {
+    document.getElementById('loading').innerHTML = `
+        <div style="background: rgba(0,0,0,0.9); padding: 20px; border-radius: 15px;">
+            <h2>🃏 Carta do Personagem</h2>
+            <img src="imagens/image1.png" width="200" style="border-radius: 10px;">
+            <div style="margin-top: 15px;">
+                <button class="btn" onclick="showInfo('historia')">📖 História</button>
+                <button class="btn" onclick="showInfo('idade')">🎂 Idade</button>
+                <button class="btn" onclick="showInfo('habilidade')">⚡ Habilidade</button>
+            </div>
+        </div>
+    `;
+}
+
+function showInfo(type) {
+    const infos = {
+        historia: "Lúcio aprendeu invisibilidade para proteger seus amigos",
+        idade: "18 anos",
+        habilidade: "Invisibilidade Total por 10 minutos"
+    };
+    
+    alert(infos[type]);
+}
+</script>
+
 </body>
 </html>
