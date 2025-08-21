@@ -5,73 +5,157 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Personagem 1 - Lúcio</title>
     
+    <!-- Biblioteca de reconhecimento de marcadores -->
+    <script src="https://cdn.jsdelivr.net/npm/js-aruco/dist/aruco.js"></script>
+    
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; background: black; color: white; font-family: Arial; }
-        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
-        .btn { background: #4285f4; color: white; border: none; padding: 15px 30px; border-radius: 25px; margin: 10px; }
-        #camera-feed { width: 100%; height: 100%; position: fixed; top: 0; left: 0; display: none; }
+        body { margin: 0; padding: 0; overflow: hidden; background: black; }
+        #loading { 
+            position: fixed; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); color: white; text-align: center; 
+            z-index: 1000; background: rgba(0,0,0,0.8); padding: 20px; border-radius: 15px;
+        }
+        #camera-container { position: fixed; width: 100%; height: 100%; top: 0; left: 0; }
+        #camera-feed { width: 100%; height: 100%; object-fit: cover; }
+        #ar-overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            pointer-events: none; z-index: 900;
+        }
+        .ar-card {
+            position: absolute;
+            width: 200px;
+            height: 280px;
+            background: url('imagens/image1.png') no-repeat center/contain;
+            border: 3px solid gold;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(255,215,0,0.5);
+            display: none;
+        }
+        .ar-btn {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 50%;
+            color: white;
+            text-align: center;
+            line-height: 40px;
+            font-size: 20px;
+            cursor: pointer;
+            pointer-events: all;
+        }
+        .info-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 400px;
+            z-index: 1000;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
 <div id="loading">
     <h2>🎮 Realidade Aumentada</h2>
-    <button class="btn" onclick="startCamera()">📷 Ativar Câmera</button>
-    <p>Ou escaneie o QR code no celular</p>
+    <p>Aponte a câmera para a imagem do personagem</p>
 </div>
 
-<video id="camera-feed" autoplay playsinline></video>
+<div id="camera-container">
+    <video id="camera-feed" autoplay playsinline></video>
+    <canvas id="canvas" style="display:none;"></canvas>
+</div>
+
+<div id="ar-overlay">
+    <div class="ar-card" id="ar-card">
+        <div class="ar-btn" style="top: 20px; right: 20px;" onclick="showInfo('historia')">📖</div>
+        <div class="ar-btn" style="top: 70px; right: 20px;" onclick="showInfo('idade')">🎂</div>
+        <div class="ar-btn" style="top: 120px; right: 20px;" onclick="showInfo('habilidade')">⚡</div>
+    </div>
+</div>
+
+<div class="info-panel" id="info-panel">
+    <div id="info-content"></div>
+    <button onclick="hideInfo()" style="margin-top: 15px; padding: 10px 20px; background: #ff4444; color: white; border: none; border-radius: 5px;">Fechar</button>
+</div>
 
 <script>
-// Simulação de RA - Foco na funcionalidade primeiro
-function startCamera() {
-    document.getElementById('loading').innerHTML = '<h2>📷 Ativando câmera...</h2>';
-    
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
-                const video = document.getElementById('camera-feed');
-                video.srcObject = stream;
-                video.style.display = 'block';
-                document.getElementById('loading').style.display = 'none';
-                
-                // Simular reconhecimento bem-sucedido após 3 segundos
-                setTimeout(showCharacterCard, 3000);
-            })
-            .catch(function(error) {
-                console.error('Erro na câmera:', error);
-                // Modo de demonstração sem câmera
-                showCharacterCard();
-            });
-    } else {
-        // Navegador sem suporte - modo demo
-        showCharacterCard();
+const video = document.getElementById('camera-feed');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const arCard = document.getElementById('ar-card');
+const loading = document.getElementById('loading');
+
+// Dimensões do canvas
+canvas.width = 640;
+canvas.height = 480;
+
+// Iniciar câmera
+async function startCamera() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'environment' } 
+        });
+        video.srcObject = stream;
+        loading.style.display = 'none';
+        
+        // Iniciar detecção
+        requestAnimationFrame(detectMarker);
+    } catch (error) {
+        console.error('Erro na câmera:', error);
+        loading.innerHTML = '<h2>❌ Erro de câmera</h2><p>Use um dispositivo com câmera</p>';
     }
 }
 
-function showCharacterCard() {
-    document.getElementById('loading').innerHTML = `
-        <div style="background: rgba(0,0,0,0.9); padding: 20px; border-radius: 15px;">
-            <h2>🃏 Carta do Personagem</h2>
-            <img src="imagens/image1.png" width="200" style="border-radius: 10px;">
-            <div style="margin-top: 15px;">
-                <button class="btn" onclick="showInfo('historia')">📖 História</button>
-                <button class="btn" onclick="showInfo('idade')">🎂 Idade</button>
-                <button class="btn" onclick="showInfo('habilidade')">⚡ Habilidade</button>
-            </div>
-        </div>
-    `;
+// Detectar marcador
+function detectMarker() {
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        // Desenhar frame no canvas
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+        // SIMULAÇÃO: Sempre mostrar a carta para teste
+        // Na versão final, aqui viria o código de reconhecimento real
+        showCard(100, 100); // Posição fixa para teste
+        
+        // Para reconhecimento real, usaríamos:
+        // const detector = new AR.Detector();
+        // const markers = detector.detect(imageData);
+        // if (markers.length > 0) { showCard(markers[0].center.x, markers[0].center.y); }
+    }
+    
+    requestAnimationFrame(detectMarker);
+}
+
+function showCard(x, y) {
+    arCard.style.display = 'block';
+    arCard.style.left = (x - 100) + 'px';
+    arCard.style.top = (y - 140) + 'px';
 }
 
 function showInfo(type) {
-    const infos = {
-        historia: "Lúcio aprendeu invisibilidade para proteger seus amigos",
+    const info = {
+        historia: "Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares.",
         idade: "18 anos",
-        habilidade: "Invisibilidade Total por 10 minutos"
+        habilidade: "Invisibilidade Total - Pode se tornar completamente invisível por até 10 minutos"
     };
     
-    alert(infos[type]);
+    document.getElementById('info-content').innerHTML = `<h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3><p>${info[type]}</p>`;
+    document.getElementById('info-panel').style.display = 'block';
 }
+
+function hideInfo() {
+    document.getElementById('info-panel').style.display = 'none';
+}
+
+// Iniciar quando a página carregar
+window.addEventListener('load', startCamera);
 </script>
 
 </body>
