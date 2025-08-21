@@ -69,15 +69,10 @@
             cursor: pointer;
         }
         
-        /* Debug - para ver os botões */
-        .a-circle {
-            border: 2px solid #00ff00 !important;
-        }
-        
-        /* Tornar botões mais visíveis */
-        [circle] {
-            opacity: 0.9 !important;
-            transition: all 0.3s ease !important;
+        /* Botões sempre visíveis */
+        .ar-button {
+            opacity: 1 !important;
+            visibility: visible !important;
         }
     </style>
 </head>
@@ -104,74 +99,70 @@
         
         <!-- Carta do Personagem -->
         <a-entity position="0 0 0">
-            <!-- Imagem de fundo -->
+            <!-- Imagem de fundo - CORRIGIDA ROTAÇÃO -->
             <a-image 
                 src="imagens/image1.png" 
                 position="0 0.5 0" 
                 width="1.2" 
                 height="1.6"
+                rotation="0 180 0" <!-- RODA 180° PARA CORRIGIR INVERTIDO -->
+                material="side: double; transparent: true; alphaTest: 0.5"
             ></a-image>
             
-            <!-- BOTÕES CORRIGIDOS (APARECEM E SÃO CLICÁVEIS) -->
-            <a-circle 
-                position="0.6 0.3 0.1" 
-                radius="0.15" 
-                color="#FF6B6B"
-                material="shader: flat; opacity: 0.9"
-                animation="property: scale; from: 1 1 1; to: 1.2 1.2 1; dur: 1000; loop: true; dir: alternate"
-                event-set__mouseenter="scale: 1.3 1.3 1"
-                event-set__mouseleave="scale: 1 1 1"
-                clickable
-                onclick="showInfo('historia')"
-            >
-                <a-text 
-                    value="📖" 
-                    position="0 0 0.01" 
-                    align="center" 
-                    scale="2 2 1"
-                    color="#FFFFFF"
-                ></a-text>
-            </a-circle>
+            <!-- BOTÕES CORRIGIDOS - SEM CSS COMPLEXO -->
+            <a-entity position="0.6 0.3 0.1" class="ar-button">
+                <a-circle 
+                    radius="0.15" 
+                    color="#FF6B6B"
+                    material="shader: flat; opacity: 1"
+                    events="click: function() { showInfo('historia'); }"
+                    cursor="rayOrigin: mouse"
+                >
+                    <a-text 
+                        value="📖" 
+                        position="0 0 0.01" 
+                        align="center" 
+                        scale="2 2 1"
+                        color="#FFFFFF"
+                    ></a-text>
+                </a-circle>
+            </a-entity>
             
-            <a-circle 
-                position="0.6 -0.1 0.1" 
-                radius="0.15" 
-                color="#4ECDC4"
-                material="shader: flat; opacity: 0.9"
-                animation="property: scale; from: 1 1 1; to: 1.2 1.2 1; dur: 1000; loop: true; dir: alternate; delay: 200"
-                event-set__mouseenter="scale: 1.3 1.3 1"
-                event-set__mouseleave="scale: 1 1 1"
-                clickable
-                onclick="showInfo('idade')"
-            >
-                <a-text 
-                    value="🎂" 
-                    position="0 0 0.01" 
-                    align="center" 
-                    scale="2 2 1"
-                    color="#FFFFFF"
-                ></a-text>
-            </a-circle>
+            <a-entity position="0.6 -0.1 0.1" class="ar-button">
+                <a-circle 
+                    radius="0.15" 
+                    color="#4ECDC4"
+                    material="shader: flat; opacity: 1"
+                    events="click: function() { showInfo('idade'); }"
+                    cursor="rayOrigin: mouse"
+                >
+                    <a-text 
+                        value="🎂" 
+                        position="0 0 0.01" 
+                        align="center" 
+                        scale="2 2 1"
+                        color="#FFFFFF"
+                    ></a-text>
+                </a-circle>
+            </a-entity>
             
-            <a-circle 
-                position="0.6 -0.5 0.1" 
-                radius="0.15" 
-                color="#45B7D1"
-                material="shader: flat; opacity: 0.9"
-                animation="property: scale; from: 1 1 1; to: 1.2 1.2 1; dur: 1000; loop: true; dir: alternate; delay: 400"
-                event-set__mouseenter="scale: 1.3 1.3 1"
-                event-set__mouseleave="scale: 1 1 1"
-                clickable
-                onclick="showInfo('habilidade')"
-            >
-                <a-text 
-                    value="⚡" 
-                    position="0 0 0.01" 
-                    align="center" 
-                    scale="2 2 1"
-                    color="#FFFFFF"
-                ></a-text>
-            </a-circle>
+            <a-entity position="0.6 -0.5 0.1" class="ar-button">
+                <a-circle 
+                    radius="0.15" 
+                    color="#45B7D1"
+                    material="shader: flat; opacity: 1"
+                    events="click: function() { showInfo('habilidade'); }"
+                    cursor="rayOrigin: mouse"
+                >
+                    <a-text 
+                        value="⚡" 
+                        position="0 0 0.01" 
+                        align="center" 
+                        scale="2 2 1"
+                        color="#FFFFFF"
+                    ></a-text>
+                </a-circle>
+            </a-entity>
         </a-entity>
         
     </a-marker>
@@ -183,10 +174,7 @@
             position="0 0 -1"
             geometry="primitive: ring; radiusInner: 0.02; radiusOuter: 0.03"
             material="color: #FF6B6B; shader: flat"
-            animation__click="property: scale; startEvents: click; from: 0.1 0.1 0.1; to: 1 1 1; dur: 150"
-            animation__fusing="property: scale; startEvents: fusing; from: 1 1 1; to: 0.1 0.1 0.1; dur: 1500"
-            animation__mouseleave="property: scale; startEvents: mouseleave; from: 0.1 0.1 0.1; to: 1 1 1; dur: 500">
-        </a-entity>
+        ></a-entity>
     </a-entity>
     
 </a-scene>
@@ -211,23 +199,6 @@
 </div>
 
 <script>
-// Componente clickable para A-Frame
-AFRAME.registerComponent('clickable', {
-    init: function () {
-        this.el.addEventListener('click', function (evt) {
-            console.log('Botão clicado!');
-        });
-        
-        this.el.addEventListener('mouseenter', function () {
-            this.setAttribute('scale', '1.3 1.3 1');
-        });
-        
-        this.el.addEventListener('mouseleave', function () {
-            this.setAttribute('scale', '1 1 1');
-        });
-    }
-});
-
 // Funções de informação
 function showInfo(type) {
     console.log('Mostrando informação:', type);
@@ -244,6 +215,21 @@ function hideLoading() {
     document.getElementById('loading').style.display = 'none';
     console.log('RA iniciada - Procurando marcador Hiro...');
 }
+
+// Forçar visibilidade dos botões após carregamento
+document.querySelector('a-scene').addEventListener('loaded', function() {
+    console.log('Cena AR carregada!');
+    
+    // Aguardar um pouco e forçar visibilidade
+    setTimeout(function() {
+        const buttons = document.querySelectorAll('.ar-button');
+        buttons.forEach(button => {
+            button.setAttribute('visible', 'true');
+            button.setAttribute('opacity', '1');
+        });
+        console.log('Botões forçados a aparecer');
+    }, 2000);
+});
 
 // Iniciar automaticamente em dispositivos móveis
 if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
