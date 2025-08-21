@@ -5,148 +5,218 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Personagem 1 - Lúcio</title>
     
-    <!-- Biblioteca de reconhecimento de marcadores -->
+    <!-- Biblioteca de reconhecimento -->
     <script src="https://cdn.jsdelivr.net/npm/js-aruco/dist/aruco.js"></script>
     
     <style>
-        body { margin: 0; padding: 0; overflow: hidden; background: black; }
+        body { margin: 0; padding: 0; overflow: hidden; background: black; font-family: Arial; }
+        
         #loading { 
-            position: fixed; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); color: white; text-align: center; 
-            z-index: 1000; background: rgba(0,0,0,0.8); padding: 20px; border-radius: 15px;
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            color: white; text-align: center; z-index: 1000; background: rgba(0,0,0,0.9);
+            padding: 30px; border-radius: 20px; border: 2px solid #4285f4;
         }
-        #camera-container { position: fixed; width: 100%; height: 100%; top: 0; left: 0; }
+        
+        .btn { 
+            background: #4285f4; color: white; border: none; padding: 15px 30px; 
+            border-radius: 25px; margin: 15px; font-size: 18px; cursor: pointer;
+        }
+        
+        #camera-container { 
+            position: fixed; width: 100%; height: 100%; top: 0; left: 0; 
+            display: none; /* Começa escondido */
+        }
+        
         #camera-feed { width: 100%; height: 100%; object-fit: cover; }
+        
         #ar-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             pointer-events: none; z-index: 900;
         }
+        
         .ar-card {
             position: absolute;
-            width: 200px;
-            height: 280px;
+            width: 250px;
+            height: 350px;
             background: url('imagens/image1.png') no-repeat center/contain;
-            border: 3px solid gold;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(255,215,0,0.5);
-            display: none;
+            border: 4px solid gold;
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(255,215,0,0.6);
+            display: none; /* Começa escondido */
         }
+        
         .ar-btn {
             position: absolute;
-            width: 40px;
-            height: 40px;
-            background: rgba(0,0,0,0.7);
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(45deg, #4285f4, #34a853);
             border-radius: 50%;
             color: white;
             text-align: center;
-            line-height: 40px;
-            font-size: 20px;
+            line-height: 50px;
+            font-size: 24px;
             cursor: pointer;
             pointer-events: all;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            border: 2px solid white;
         }
+        
         .info-panel {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
+            background: rgba(0,0,0,0.97);
             color: white;
-            padding: 20px;
-            border-radius: 15px;
-            width: 80%;
-            max-width: 400px;
-            z-index: 1000;
+            padding: 25px;
+            border-radius: 20px;
+            width: 85%;
+            max-width: 450px;
+            z-index: 1001;
             display: none;
+            border: 3px solid #4285f4;
+            box-shadow: 0 0 40px rgba(66, 133, 244, 0.4);
+        }
+        
+        .close-btn {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
 
+<!-- Tela de Loading -->
 <div id="loading">
-    <h2>🎮 Realidade Aumentada</h2>
-    <p>Aponte a câmera para a imagem do personagem</p>
+    <h2>🎮 REALIDADE AUMENTADA</h2>
+    <p>Aponte para a imagem do personagem</p>
+    <button class="btn" onclick="startCamera()">📷 ATIVAR CÂMERA TRASEIRA</button>
+    <p style="font-size: 14px; margin-top: 20px; color: #ccc;">
+        Permita o acesso à câmera quando solicitado
+    </p>
 </div>
 
+<!-- Container da Câmera -->
 <div id="camera-container">
     <video id="camera-feed" autoplay playsinline></video>
     <canvas id="canvas" style="display:none;"></canvas>
 </div>
 
+<!-- Overlay de RA -->
 <div id="ar-overlay">
     <div class="ar-card" id="ar-card">
-        <div class="ar-btn" style="top: 20px; right: 20px;" onclick="showInfo('historia')">📖</div>
-        <div class="ar-btn" style="top: 70px; right: 20px;" onclick="showInfo('idade')">🎂</div>
-        <div class="ar-btn" style="top: 120px; right: 20px;" onclick="showInfo('habilidade')">⚡</div>
+        <!-- Botões de Informação -->
+        <div class="ar-btn" style="top: 30px; right: 30px;" onclick="showInfo('historia')">📖</div>
+        <div class="ar-btn" style="top: 100px; right: 30px;" onclick="showInfo('idade')">🎂</div>
+        <div class="ar-btn" style="top: 170px; right: 30px;" onclick="showInfo('habilidade')">⚡</div>
+        <div class="ar-btn" style="top: 240px; right: 30px;" onclick="showInfo('frase')">💬</div>
     </div>
 </div>
 
+<!-- Painel de Informações -->
 <div class="info-panel" id="info-panel">
-    <div id="info-content"></div>
-    <button onclick="hideInfo()" style="margin-top: 15px; padding: 10px 20px; background: #ff4444; color: white; border: none; border-radius: 5px;">Fechar</button>
+    <div id="info-content" style="text-align: center;"></div>
+    <button class="close-btn" onclick="hideInfo()">FECHAR</button>
 </div>
 
 <script>
+// Elementos DOM
 const video = document.getElementById('camera-feed');
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 const arCard = document.getElementById('ar-card');
 const loading = document.getElementById('loading');
+const cameraContainer = document.getElementById('camera-container');
 
-// Dimensões do canvas
+// Configurações do canvas
 canvas.width = 640;
 canvas.height = 480;
 
-// Iniciar câmera
+// Dados dos personagens
+const personagemInfo = {
+    historia: "Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares dos perigos da cidade. Desde criança, ele demonstrava habilidades especiais de camuflagem.",
+    idade: "18 anos",
+    habilidade: "INVISIBILIDADE TOTAL - Pode se tornar completamente invisível por até 10 minutos, tornando-se imperceptível a olho nu e à maioria dos dispositivos eletrônicos.",
+    frase: "\"Ninguém me vê, mas eu vejo tudo!\""
+};
+
+// Iniciar câmera traseira
 async function startCamera() {
     try {
+        loading.innerHTML = '<h2>📷 ACESSANDO CÂMERA...</h2><p>Aguarde...</p>';
+        
         const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment' } 
+            video: {
+                facingMode: 'environment', // CÂMERA TRASEIRA
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            }
         });
+        
         video.srcObject = stream;
         loading.style.display = 'none';
+        cameraContainer.style.display = 'block';
         
         // Iniciar detecção
-        requestAnimationFrame(detectMarker);
+        video.addEventListener('loadedmetadata', function() {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            requestAnimationFrame(detectMarker);
+        });
+        
     } catch (error) {
         console.error('Erro na câmera:', error);
-        loading.innerHTML = '<h2>❌ Erro de câmera</h2><p>Use um dispositivo com câmera</p>';
+        loading.innerHTML = `
+            <h2>❌ ERRO DE CÂMERA</h2>
+            <p>${error.message || 'Não foi possível acessar a câmera traseira'}</p>
+            <button class="btn" onclick="startCamera()">🔄 TENTAR NOVAMENTE</button>
+        `;
     }
 }
 
-// Detectar marcador
+// Simulação de detecção de marcador
 function detectMarker() {
     if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        // Desenhar frame no canvas
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         
-        // SIMULAÇÃO: Sempre mostrar a carta para teste
-        // Na versão final, aqui viria o código de reconhecimento real
-        showCard(100, 100); // Posição fixa para teste
+        // SIMULAÇÃO: Mostrar carta no centro (para teste)
+        // Em produção real, aqui viria o código de reconhecimento com js-aruco
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
         
-        // Para reconhecimento real, usaríamos:
-        // const detector = new AR.Detector();
-        // const markers = detector.detect(imageData);
-        // if (markers.length > 0) { showCard(markers[0].center.x, markers[0].center.y); }
+        showCard(centerX, centerY);
     }
     
     requestAnimationFrame(detectMarker);
 }
 
+// Mostrar carta de RA
 function showCard(x, y) {
     arCard.style.display = 'block';
-    arCard.style.left = (x - 100) + 'px';
-    arCard.style.top = (y - 140) + 'px';
+    arCard.style.left = (x - 125) + 'px'; // Centralizar
+    arCard.style.top = (y - 175) + 'px';
 }
 
+// Mostrar informações
 function showInfo(type) {
-    const info = {
-        historia: "Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares.",
-        idade: "18 anos",
-        habilidade: "Invisibilidade Total - Pode se tornar completamente invisível por até 10 minutos"
+    const titles = {
+        historia: "📖 HISTÓRIA",
+        idade: "🎂 IDADE", 
+        habilidade: "⚡ HABILIDADE",
+        frase: "💬 FRASE ICÔNICA"
     };
     
-    document.getElementById('info-content').innerHTML = `<h3>${type.charAt(0).toUpperCase() + type.slice(1)}</h3><p>${info[type]}</p>`;
+    document.getElementById('info-content').innerHTML = `
+        <h3 style="color: #4285f4; margin-bottom: 15px;">${titles[type]}</h3>
+        <p style="font-size: 16px; line-height: 1.5;">${personagemInfo[type]}</p>
+    `;
+    
     document.getElementById('info-panel').style.display = 'block';
 }
 
@@ -155,7 +225,9 @@ function hideInfo() {
 }
 
 // Iniciar quando a página carregar
-window.addEventListener('load', startCamera);
+window.addEventListener('load', function() {
+    console.log('✅ Página carregada - Pronta para RA');
+});
 </script>
 
 </body>
