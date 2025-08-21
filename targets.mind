@@ -1,0 +1,10 @@
+{
+  "version": "1.0",
+  "targets": [
+    {
+      "id": 0,
+      "image": "imagens/image1.png",
+      "title": "Personagem 1"
+    }
+  ]
+}
