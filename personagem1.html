@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Personagem 1 - RA Completa</title>
     
     <!-- A-Frame -->
@@ -11,36 +11,86 @@
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     
     <style>
-        body {
+        * {
             margin: 0;
             padding: 0;
-            background: #000;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
             color: white;
-            font-family: Arial;
+            min-height: 100vh;
             overflow: hidden;
         }
         
         #loading {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             z-index: 1000;
-            background: rgba(0,0,0,0.9);
+            transition: opacity 0.5s;
+        }
+        
+        .loading-content {
+            text-align: center;
             padding: 30px;
+            background: rgba(0, 0, 0, 0.7);
             border-radius: 20px;
             border: 2px solid #4285f4;
+            max-width: 90%;
+            width: 400px;
+        }
+        
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #fdbb2d;
         }
         
         .btn {
-            background: #4285f4;
+            background: linear-gradient(to right, #1fa2ff, #12d8fa);
             color: white;
             border: none;
             padding: 15px 30px;
-            border-radius: 25px;
-            margin: 10px;
+            border-radius: 50px;
+            margin: 20px 0;
             cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(1px);
+        }
+        
+        .marker-img {
+            width: 150px;
+            height: 150px;
+            border: 2px solid white;
+            border-radius: 10px;
+            margin: 15px 0;
+            background: linear-gradient(45deg, #2c3e50, #4ca1af);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 5rem;
+            color: white;
         }
         
         /* Painéis de informação */
@@ -50,44 +100,107 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
+            background: rgba(0, 0, 0, 0.95);
             color: white;
-            padding: 20px;
+            padding: 25px;
             border-radius: 15px;
             width: 90%;
             max-width: 400px;
             z-index: 1001;
             text-align: center;
             border: 2px solid #4285f4;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+        
+        .info-panel h3 {
+            color: #fdbb2d;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .info-panel p {
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
         }
         
         .close-btn {
-            background: #ff4444;
+            background: linear-gradient(to right, #ff6b6b, #ff4444);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin-top: 15px;
+            padding: 12px 25px;
+            border-radius: 50px;
             cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
         }
         
-        /* Botões AR visíveis */
-        .ar-button {
-            opacity: 1 !important;
-            visibility: visible !important;
+        .close-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
+        }
+        
+        /* Status de erro */
+        .error-status {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid #ff4444;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        /* Ajustes para a cena AR */
+        a-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 900;
+        }
+        
+        /* Instruções */
+        .instructions {
+            margin: 20px 0;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+        
+        /* Rodapé */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            font-size: 0.9rem;
+            z-index: 950;
         }
     </style>
 </head>
 <body>
 
 <div id="loading">
-    <h2>🎮 REALIDADE AUMENTADA</h2>
-    <p>Mostre o marcador Hiro para a câmera</p>
-    <img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" 
-         width="100" 
-         style="border: 2px solid white; margin: 10px;">
-    <br>
-    <button class="btn" onclick="startAR()">📷 INICIAR CÂMERA</button>
+    <div class="loading-content">
+        <h2>🎮 REALIDADE AUMENTADA</h2>
+        
+        <div class="error-status">
+            <strong>Status:</strong> Aguardando inicialização da câmera
+        </div>
+        
+        <div class="instructions">
+            <p>Mostre o marcador Hiro para a câmera quando solicitado</p>
+        </div>
+        
+        <div class="marker-img">H</div>
+        
+        <button class="btn" onclick="startAR()">📷 INICIAR CÂMERA</button>
+        
+        <p>Certifique-se de permitir o acesso à sua câmera</p>
+    </div>
 </div>
 
 <!-- Cena AR -->
@@ -105,11 +218,11 @@
         
         <!-- Imagem do Personagem - ROTAÇÃO CORRIGIDA -->
         <a-image 
-            src="imagens/image1.png" 
+            src="https://cdn.glitch.global/6d5dff6f-2e4f-4d34-8f5c-5ff5c63c7c3e/image1.png?v=1739221063714" 
             position="0 0.5 0" 
             width="1.2" 
             height="1.6"
-            rotation="0 180 0" <!-- ⬅️ ROTAÇÃO 180° CORRIGIDA -->
+            rotation="0 180 0"
             material="transparent: true; alphaTest: 0.5"
         ></a-image>
         
@@ -196,16 +309,28 @@
     <button class="close-btn" onclick="hideInfo()">FECHAR</button>
 </div>
 
+<div class="footer">
+    Sistema de Realidade Aumentada | Personagem: Lúcio | Marcador: Hiro
+</div>
+
 <script>
 // Elementos
 const loading = document.getElementById('loading');
 const arScene = document.getElementById('ar-scene');
+const errorStatus = document.querySelector('.error-status');
 
+// Função para iniciar a realidade aumentada
 async function startAR() {
     try {
+        errorStatus.innerHTML = '<strong>Status:</strong> Solicitando acesso à câmera...';
+        
         // Testar câmera primeiro
         const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment' }
+            video: { 
+                facingMode: 'environment',
+                width: { ideal: 1280 },
+                height: { ideal: 720 }
+            } 
         });
         
         // Parar teste
@@ -220,7 +345,8 @@ async function startAR() {
         
     } catch (error) {
         console.error('Erro na câmera:', error);
-        alert('Erro ao acessar câmera: ' + error.message);
+        errorStatus.innerHTML = `<strong>Erro:</strong> Não foi possível acessar a câmera (${error.message})`;
+        alert('Erro ao acessar câmera. Verifique as permissões do navegador.');
     }
 }
 
@@ -243,10 +369,36 @@ function hideInfo() {
     });
 }
 
-// Auto-iniciar em mobile
+// Verificar se é mobile e tentar auto-iniciar
 if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-    setTimeout(startAR, 1000);
+    setTimeout(() => {
+        errorStatus.innerHTML = '<strong>Dispositivo móvel detectado:</strong> Clique em "Iniciar Câmera" quando estiver pronto';
+    }, 1000);
+} else {
+    errorStatus.innerHTML = '<strong>Dispositivo não móvel:</strong> A experiência AR funciona melhor em smartphones';
 }
+
+// Adicionar evento para detectar quando o marcador é encontrado
+document.addEventListener('markerFound', function() {
+    console.log('Marcador Hiro detectado!');
+    errorStatus.innerHTML = '<strong>Status:</strong> Marcador detectado com sucesso!';
+});
+
+// Adicionar evento para detectar quando o marcador é perdido
+document.addEventListener('markerLost', function() {
+    console.log('Marcador Hiro perdido!');
+    errorStatus.innerHTML = '<strong>Status:</strong> Aguardando detecção do marcador Hiro...';
+});
+
+// Verificar se há erros na cena
+arScene.addEventListener('loaded', function() {
+    console.log('Cena AR carregada com sucesso');
+});
+
+arScene.addEventListener('error', function(e) {
+    console.error('Erro na cena AR:', e);
+    errorStatus.innerHTML = '<strong>Erro:</strong> Falha ao carregar a cena de realidade aumentada';
+});
 </script>
 
 </body>
