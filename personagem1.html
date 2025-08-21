@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Personagem 1</title>
+
+  <!-- A-Frame recente -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+  <!-- AR.js atual (NÃO use rawgit) -->
+  <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.js"></script>
+
+  <style>body{margin:0;overflow:hidden}</style>
+</head>
+<body>
+  <a-scene
+    embedded
+    vr-mode-ui="enabled: false"
+    renderer="logarithmicDepthBuffer: true"
+    arjs="sourceType: webcam; debugUIEnabled: false"
+  >
+    <!-- Tudo que deve aparecer em RA vai DENTRO do marker -->
+    <a-marker preset="hiro">
+
+      <!-- Carta (perto do centro do marcador) -->
+      <a-image src="imagens/image1.png" position="0 0.5 0" scale="1.2 1.6 1"></a-image>
+
+      <!-- Botão clicável -->
+      <a-plane id="btnHistoria" position="0 -0.1 0" width="1.2" height="0.3" color="#333">
+        <a-text value="Mostrar história" align="center" position="0 0 0.01" width="1.8" color="#fff"></a-text>
+      </a-plane>
+
+      <!-- Bloco com os textos (começa invisível) -->
+      <a-entity id="info" visible="false">
+        <a-text value="Idade: 18" position="-0.8 0.9 0" width="2" color="cyan"></a-text>
+        <a-text value="História: Lúcio aprendeu invisibilidade..." position="-0.8 0.6 0" width="2.2" color="lime"></a-text>
+        <a-text value="Habilidade: Invisibilidade" position="-0.8 0.3 0" width="2" color="yellow"></a-text>
+        <a-text value="Frase: 'Ninguém me vê!'" position="-0.8 0.0 0" width="2" color="orange"></a-text>
+      </a-entity>
+
+    </a-marker>
+
+    <!-- Câmera + cursor para reconhecer cliques/toques -->
+    <a-entity camera look-controls cursor="rayOrigin: mouse"></a-entity>
+  </a-scene>
+
+  <!-- Script externo -->
+  <script src="scripts/interatividade.js"></script>
+</body>
+</html>
