@@ -1,13 +1,18 @@
+// scripts/interatividade.js
 document.addEventListener('DOMContentLoaded', () => {
-  const btn  = document.getElementById('btnHistoria');
+  const btn = document.getElementById('btnHistoria');
   const info = document.getElementById('info');
 
-  const toggle = () => {
-    const v = info.getAttribute('visible');
-    info.setAttribute('visible', !v);
-  };
+  if (btn && info) {
+    const toggle = () => {
+      const isVisible = info.getAttribute('visible');
+      info.setAttribute('visible', !isVisible);
+    };
 
-  // desktop e mobile
-  btn.addEventListener('click', toggle);
-  btn.addEventListener('touchstart', (e) => { e.preventDefault(); toggle(); }, {passive:false});
+    btn.addEventListener('click', toggle);
+    btn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      toggle();
+    }, { passive: false });
+  }
 });
