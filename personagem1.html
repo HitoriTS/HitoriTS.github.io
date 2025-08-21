@@ -69,15 +69,21 @@
             cursor: pointer;
         }
         
-        /* Garantir que os botões são visíveis */
-        a-circle {
-            opacity: 1 !important;
-            visibility: visible !important;
+        /* REMOVER completamente o cursor */
+        .a-ring {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
         }
         
-        /* Debug - borda nos botões */
-        .debug-button {
-            border: 3px solid #00FF00 !important;
+        /* Garantir que a cena ocupa toda a tela */
+        .a-scene {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 100 !important;
         }
     </style>
 </head>
@@ -94,8 +100,9 @@
 <a-scene 
     vr-mode-ui="enabled: false"
     arjs="sourceType: webcam; debugUIEnabled: false;"
-    renderer="logarithmicDepthBuffer: true;"
+    renderer="logarithmicDepthBuffer: true; colorManagement: true;"
     embedded
+    background="color: #000000"
 >
     
     <!-- Marcador HIRO (QR code pattern) -->
@@ -113,20 +120,21 @@
                 material="side: double; transparent: true; alphaTest: 0.5"
             ></a-image>
             
-            <!-- BOTÕES SIMPLIFICADOS E GARANTIDOS -->
+            <!-- BOTÕES VISÍVEIS -->
             <a-entity position="0.6 0.3 0.1">
                 <a-circle 
-                    class="debug-button"
-                    radius="0.2" 
+                    id="btn-historia"
+                    radius="0.18" 
                     color="#FF6B6B"
-                    material="shader: flat; opacity: 1"
+                    material="shader: flat; opacity: 0.9"
                     events="click: function() { showInfo('historia'); }"
+                    animation="property: scale; from: 1 1 1; to: 1.1 1.1 1; dur: 800; loop: true; dir: alternate"
                 >
                     <a-text 
                         value="📖" 
                         position="0 0 0.01" 
                         align="center" 
-                        scale="3 3 1"
+                        scale="2.5 2.5 1"
                         color="#FFFFFF"
                     ></a-text>
                 </a-circle>
@@ -134,17 +142,18 @@
             
             <a-entity position="0.6 -0.1 0.1">
                 <a-circle 
-                    class="debug-button"
-                    radius="0.2" 
+                    id="btn-idade"
+                    radius="0.18" 
                     color="#4ECDC4"
-                    material="shader: flat; opacity: 1"
+                    material="shader: flat; opacity: 0.9"
                     events="click: function() { showInfo('idade'); }"
+                    animation="property: scale; from: 1 1 1; to: 1.1 1.1 1; dur: 800; loop: true; dir: alternate; delay: 200"
                 >
                     <a-text 
                         value="🎂" 
                         position="0 0 0.01" 
                         align="center" 
-                        scale="3 3 1"
+                        scale="2.5 2.5 1"
                         color="#FFFFFF"
                     ></a-text>
                 </a-circle>
@@ -152,17 +161,18 @@
             
             <a-entity position="0.6 -0.5 0.1">
                 <a-circle 
-                    class="debug-button"
-                    radius="0.2" 
+                    id="btn-habilidade"
+                    radius="0.18" 
                     color="#45B7D1"
-                    material="shader: flat; opacity: 1"
+                    material="shader: flat; opacity: 0.9"
                     events="click: function() { showInfo('habilidade'); }"
+                    animation="property: scale; from: 1 1 1; to: 1.1 1.1 1; dur: 800; loop: true; dir: alternate; delay: 400"
                 >
                     <a-text 
                         value="⚡" 
                         position="0 0 0.01" 
                         align="center" 
-                        scale="3 3 1"
+                        scale="2.5 2.5 1"
                         color="#FFFFFF"
                     ></a-text>
                 </a-circle>
@@ -171,13 +181,9 @@
         
     </a-marker>
     
-    <!-- Câmera com cursor ESCONDIDO -->
-    <a-entity camera>
-        <a-entity 
-            cursor="rayOrigin: mouse; fuse: true; fuseTimeout: 500"
-            position="0 0 -1"
-            visible="false"  <!-- CURSOR ESCONDIDO -->
-        ></a-entity>
+    <!-- Câmera SEM CURSOR -->
+    <a-entity camera="fov: 80; zoom: 1;" look-controls="enabled: false">
+        <!-- SEM cursor - removido completamente -->
     </a-entity>
     
 </a-scene>
@@ -219,42 +225,33 @@ function hideLoading() {
     console.log('RA iniciada - Procurando marcador Hiro...');
 }
 
-// CORREÇÃO AGressIVA DOS BOTÕES
-function forceButtonsToAppear() {
-    console.log('Forçando botões a aparecer...');
-    
-    const buttons = document.querySelectorAll('a-circle');
-    buttons.forEach((button, index) => {
-        // Forçar propriedades visuais
-        button.setAttribute('radius', '0.2');
-        button.setAttribute('color', index === 0 ? '#FF6B6B' : index === 1 ? '#4ECDC4' : '#45B7D1');
-        button.setAttribute('opacity', '1');
-        button.setAttribute('visible', 'true');
-        button.setAttribute('material', 'shader: flat; opacity: 1');
-        
-        // Adicionar animação manual
-        button.setAttribute('animation', {
-            property: 'scale',
-            from: '1 1 1',
-            to: '1.2 1.2 1',
-            dur: 1000,
-            loop: true,
-            dir: 'alternate'
-        });
-        
-        console.log('Botão ' + index + ' forçado a aparecer');
+// Remover completamente qualquer cursor residual
+function removeCursorCompletely() {
+    const rings = document.querySelectorAll('.a-ring, [geometry*="ring"], [cursor]');
+    rings.forEach(ring => {
+        ring.parentNode.removeChild(ring);
     });
+    console.log('Cursores removidos completamente');
 }
 
 // Quando a cena carregar
 document.querySelector('a-scene').addEventListener('loaded', function() {
     console.log('✅ Cena AR carregada!');
     
-    // Forçar botões a aparecer após 2 segundos
-    setTimeout(forceButtonsToAppear, 2000);
+    // Remover cursores
+    removeCursorCompletely();
     
-    // Backup: tentar novamente após 5 segundos
-    setTimeout(forceButtonsToAppear, 5000);
+    // Forçar botões visíveis
+    setTimeout(() => {
+        const buttons = ['btn-historia', 'btn-idade', 'btn-habilidade'];
+        buttons.forEach(id => {
+            const btn = document.getElementById(id);
+            if (btn) {
+                btn.setAttribute('visible', 'true');
+                btn.setAttribute('opacity', '1');
+            }
+        });
+    }, 1000);
 });
 
 // Iniciar automaticamente em dispositivos móveis
