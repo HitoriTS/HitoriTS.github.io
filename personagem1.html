@@ -2,126 +2,127 @@
 <html>
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Personagem 1 - Lúcio</title>
+    
+    <!-- Pré-carregar tudo -->
+    <link rel="preload" href="https://aframe.io/releases/1.5.0/aframe.min.js" as="script">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js" as="script">
+    <link rel="preload" href="imagens/image1.png" as="image">
+    
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.3/dist/mindar-image-aframe.prod.js"></script>
+    
     <style>
         body { 
             margin: 0; 
-            overflow: hidden; 
+            padding: 0;
+            overflow: hidden;
+            background: #000;
             font-family: Arial, sans-serif;
-            background: black;
         }
+        
         .loading {
-            position: absolute;
+            position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             color: white;
             text-align: center;
-            z-index: 1000;
+            z-index: 10000;
         }
-        .info-panel {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            width: 80%;
-            max-width: 400px;
-            z-index: 1000;
-            text-align: center;
-        }
-        .close-btn {
-            background: #ff4444;
+        
+        .permission-btn {
+            background: #4285f4;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin-top: 15px;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 18px;
+            margin-top: 20px;
             cursor: pointer;
+        }
+        
+        #a-scene {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
         }
     </style>
 </head>
 <body>
     <div class="loading" id="loading">
-        <h2>Carregando realidade aumentada...</h2>
-        <p>Por favor, aguarde e permita o acesso à câmera</p>
+        <h2>🔄 Carregando Realidade Aumentada</h2>
+        <p>Permita o acesso à câmera quando solicitado</p>
+        <button class="permission-btn" onclick="initAR()">Ativar Câmera</button>
     </div>
 
-    <a-scene 
-        mindar-image 
-        embedded 
-        image-target-src="imagens/image1.png"
-        color-space="sRGB" 
-        renderer="colorManagement: true, precision: medium"
-        vr-mode-ui="enabled: false"
-        device-orientation-permission-ui="enabled: false"
-    >
-        
-        <a-assets>
-            <img id="card1" src="imagens/image1.png">
-        </a-assets>
-
-        <a-camera active="true" position="0 0 0" look-controls="enabled: false"></a-camera>
-
-        <a-entity mindar-image-target="targetIndex: 0">
-            <a-image src="#card1" position="0 0 0" scale="0.3 0.4 1" rotation="0 0 0">
-                <a-circle position="0.15 0.15 0.1" radius="0.06" color="#0099ff" class="clickable" data-info="historia">
-                    <a-text value="📖" position="0 0 0.01" align="center" scale="1.2 1.2 1"></a-text>
-                </a-circle>
-                
-                <a-circle position="0.15 -0.15 0.1" radius="0.06" color="#ff9900" class="clickable" data-info="idade">
-                    <a-text value="🎂" position="0 0 0.01" align="center" scale="1.2 1.2 1"></a-text>
-                </a-circle>
-            </a-image>
-        </a-entity>
-
-    </a-scene>
-
-    <!-- Painéis de informação -->
-    <div id="historia" class="info-panel">
-        <h3>📖 História</h3>
-        <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares.</p>
-        <button class="close-btn" onclick="hideInfo()">Fechar</button>
-    </div>
-
-    <div id="idade" class="info-panel">
-        <h3>🎂 Idade</h3>
-        <p>18 anos</p>
-        <button class="close-btn" onclick="hideInfo()">Fechar</button>
-    </div>
+    <div id="a-scene"></div>
 
     <script>
-        // Esconder loading quando carregado
-        document.querySelector('a-scene').addEventListener('loaded', function() {
-            document.getElementById('loading').style.display = 'none';
-        });
-
-        // Mostrar informações ao clicar nos ícones
-        document.querySelectorAll('.clickable').forEach(item => {
-            item.addEventListener('click', () => {
-                const infoType = item.getAttribute('data-info');
-                document.getElementById(infoType).style.display = 'block';
+        let arScene = null;
+        
+        function initAR() {
+            document.getElementById('loading').innerHTML = '<h2>📷 Ativando câmera...</h2>';
+            
+            // Criar cena programaticamente
+            arScene = document.createElement('a-scene');
+            arScene.setAttribute('mindar-image', 'imageTargetSrc: imagens/image1.png; autoStart: true;');
+            arScene.setAttribute('embedded', '');
+            arScene.setAttribute('color-space', 'sRGB');
+            arScene.setAttribute('renderer', 'colorManagement: true; precision: low;');
+            arScene.setAttribute('vr-mode-ui', 'enabled: false');
+            
+            // Assets
+            const assets = document.createElement('a-assets');
+            const img = document.createElement('img');
+            img.setAttribute('id', 'card1');
+            img.setAttribute('src', 'imagens/image1.png');
+            assets.appendChild(img);
+            
+            // Camera
+            const camera = document.createElement('a-camera');
+            camera.setAttribute('active', 'true');
+            camera.setAttribute('position', '0 0 0');
+            camera.setAttribute('look-controls', 'enabled: false');
+            
+            // Entity
+            const entity = document.createElement('a-entity');
+            entity.setAttribute('mindar-image-target', 'targetIndex: 0');
+            
+            const image = document.createElement('a-image');
+            image.setAttribute('src', '#card1');
+            image.setAttribute('position', '0 0 0');
+            image.setAttribute('scale', '0.3 0.4 1');
+            
+            entity.appendChild(image);
+            arScene.appendChild(assets);
+            arScene.appendChild(camera);
+            arScene.appendChild(entity);
+            
+            document.getElementById('a-scene').appendChild(arScene);
+            
+            // Event listeners
+            arScene.addEventListener('loaded', function() {
+                document.getElementById('loading').style.display = 'none';
+                console.log('✅ RA Carregada!');
             });
-        });
-
-        function hideInfo() {
-            document.querySelectorAll('.info-panel').forEach(panel => {
-                panel.style.display = 'none';
+            
+            arScene.addEventListener('error', function(e) {
+                console.error('❌ Erro:', e);
+                document.getElementById('loading').innerHTML = 
+                    '<h2>❌ Erro ao carregar</h2><p>Recarregue a página</p>';
             });
         }
-
-        // Debug: verificar se há erros
-        window.addEventListener('error', function(e) {
-            console.error('Erro:', e.error);
-            document.getElementById('loading').innerHTML = 
-                '<h2>Erro ao carregar</h2><p>Recarregue a página</p>';
-        });
+        
+        // Iniciar automaticamente se já tem permissão
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(() => initAR())
+                .catch(() => console.log('Aguardando permissão...'));
+        }
     </script>
 </body>
 </html>
