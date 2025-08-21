@@ -5,142 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Personagem 1 - RA com QR</title>
     
-    <!-- Bibliotecas NECESSÁRIAS -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     
     <style>
-        body { 
-            margin: 0; 
-            overflow: hidden; 
-            background: #000;
-            font-family: Arial, sans-serif;
-        }
-        
-        /* Loading screen */
-        #loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            color: white;
-            text-align: center;
-            z-index: 1000;
-            background: rgba(0,0,0,0.9);
-            padding: 30px;
-            border-radius: 20px;
-        }
-        
-        .start-btn {
-            background: #4285f4;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            margin-top: 20px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        
-        /* Info panels */
-        .info-panel {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            width: 80%;
-            max-width: 400px;
-            z-index: 1001;
-            text-align: center;
-        }
-        
-        .close-btn {
-            background: #ff4444;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin-top: 15px;
-            cursor: pointer;
-        }
+        body { margin: 0; overflow: hidden; background: #000; font-family: Arial; }
+        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; text-align: center; z-index: 1000; background: rgba(0,0,0,0.9); padding: 30px; border-radius: 20px; }
+        .start-btn { background: #4285f4; color: white; border: none; padding: 15px 30px; border-radius: 25px; margin-top: 20px; cursor: pointer; }
+        .info-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); color: white; padding: 20px; border-radius: 15px; width: 80%; max-width: 400px; z-index: 1001; text-align: center; }
+        .close-btn { background: #ff4444; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 15px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<!-- Tela de Loading -->
 <div id="loading">
     <h2>🎮 REALIDADE AUMENTADA</h2>
     <p>Escaneie o QR code Hiro Marker</p>
-    <p style="font-size: 14px; color: #ccc;">Mostre o marcador para a câmera</p>
     <button class="start-btn" onclick="hideLoading()">INICIAR EXPERIÊNCIA</button>
 </div>
 
-<!-- Cena AR -->
-<a-scene 
-    vr-mode-ui="enabled: false"
-    arjs="sourceType: webcam; debugUIEnabled: false;"
-    renderer="logarithmicDepthBuffer: true;"
-    embedded
->
+<a-scene vr-mode-ui="enabled: false" arjs="sourceType: webcam; debugUIEnabled: false;" renderer="logarithmicDepthBuffer: true;" embedded>
     
-    <!-- Marcador HIRO (QR code pattern) -->
     <a-marker type="pattern" preset="hiro">
-        
-        <!-- Carta do Personagem -->
         <a-entity position="0 0 0">
-            <!-- Imagem de fundo -->
-            <a-image 
-                src="imagens/image1.png" 
-                position="0 0.5 0" 
-                width="1.2" 
-                height="1.6"
-            ></a-image>
+            <a-image src="imagens/image1.png" position="0 0.5 0" width="1.2" height="1.6"></a-image>
             
-            <!-- Botões de Informação -->
-            <a-circle 
-                position="0.5 0.2 0.1" 
-                radius="0.1" 
-                color="#0099ff"
-                onclick="showInfo('historia')"
-                cursor="rayOrigin: mouse"
-            >
-                <a-text value="📖" position="0 0 0.01" align="center" scale="2 2 1"></a-text>
+            <a-circle position="0.6 0.3 0.1" radius="0.15" color="#FF6B6B" material="shader: flat;" events="click: function() { showInfo('historia'); }" animation="property: scale; from: 1 1 1; to: 1.1 1.1 1; dur: 1000; loop: true; dir: alternate" cursor="rayOrigin: mouse; fuse: true">
+                <a-text value="📖" position="0 0 0.01" align="center" scale="2 2 1" color="#FFFFFF"></a-text>
             </a-circle>
             
-            <a-circle 
-                position="0.5 -0.1 0.1" 
-                radius="0.1" 
-                color="#ff9900"
-                onclick="showInfo('idade')"
-                cursor="rayOrigin: mouse"
-            >
-                <a-text value="🎂" position="0 0 0.01" align="center" scale="2 2 1"></a-text>
+            <a-circle position="0.6 -0.1 0.1" radius="0.15" color="#4ECDC4" material="shader: flat;" events="click: function() { showInfo('idade'); }" animation="property: scale; from: 1 1 1; to: 1.1 1.1 1; dur: 1000; loop: true; dir: alternate" cursor="rayOrigin: mouse; fuse: true">
+                <a-text value="🎂" position="0 0 0.01" align="center" scale="2 2 1" color="#FFFFFF"></a-text>
             </a-circle>
             
-            <a-circle 
-                position="0.5 -0.4 0.1" 
-                radius="0.1" 
-                color="#00cc66"
-                onclick="showInfo('habilidade')"
-                cursor="rayOrigin: mouse"
-            >
-                <a-text value="⚡" position="0 0 0.01" align="center" scale="2 2 1"></a-text>
+            <a-circle position="0.6 -0.5 0.1" radius="0.15" color="#45B7D1" material="shader: flat;" events="click: function() { showInfo('habilidade'); }" animation="property: scale; from: 1 1 1; to: 1.1 1.1 1; dur: 1000; loop: true; dir: alternate" cursor="rayOrigin: mouse; fuse: true">
+                <a-text value="⚡" position="0 0 0.01" align="center" scale="2 2 1" color="#FFFFFF"></a-text>
             </a-circle>
         </a-entity>
-        
     </a-marker>
     
-    <!-- Câmera -->
     <a-entity camera></a-entity>
     
 </a-scene>
 
-<!-- Painéis de Informação -->
 <div id="historia" class="info-panel">
     <h3>📖 HISTÓRIA</h3>
     <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares dos perigos da cidade.</p>
@@ -160,27 +67,10 @@
 </div>
 
 <script>
-// Esconder loading
-function hideLoading() {
-    document.getElementById('loading').style.display = 'none';
-}
-
-// Mostrar informações
-function showInfo(type) {
-    document.getElementById(type).style.display = 'block';
-}
-
-// Esconder informações
-function hideInfo() {
-    document.querySelectorAll('.info-panel').forEach(panel => {
-        panel.style.display = 'none';
-    });
-}
-
-// Iniciar automaticamente em dispositivos móveis
-if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-    hideLoading();
-}
+function hideLoading() { document.getElementById('loading').style.display = 'none'; }
+function showInfo(type) { document.getElementById(type).style.display = 'block'; }
+function hideInfo() { document.querySelectorAll('.info-panel').forEach(panel => { panel.style.display = 'none'; }); }
+if (/Android|iPhone|iPad/i.test(navigator.userAgent)) { hideLoading(); }
 </script>
 
 </body>
