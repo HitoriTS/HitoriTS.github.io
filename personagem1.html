@@ -3,49 +3,72 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personagem 1 - RA Completa</title>
+    <title>Personagem 1 - RA Segura</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background: black; color: white; font-family: Arial; }
         #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 1000; }
         .btn { background: #4285f4; color: white; border: none; padding: 15px 30px; border-radius: 25px; margin: 10px; }
-        .info-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 20px; border-radius: 15px; text-align: center; }
-        .close-btn { background: #ff4444; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 15px; }
+        
+        /* Botões de emergência CASO os botões AR não funcionem */
+        .emergency-buttons { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            display: none; 
+            z-index: 1000;
+        }
+        .emergency-btn { 
+            background: rgba(255,255,255,0.2); 
+            color: white; 
+            border: 1px solid white; 
+            padding: 10px 15px; 
+            margin: 5px; 
+            border-radius: 20px; 
+        }
     </style>
 </head>
 <body>
 
 <div id="loading">
-    <h2>🎮 REALIDADE AUMENTADA</h2>
-    <p>Mostre o marcador Hiro para a câmera</p>
+    <h2>🎮 RA SEGURA</h2>
+    <p>Versão à prova de falhas</p>
     <button class="btn" onclick="iniciarRA()">📷 INICIAR EXPERIÊNCIA</button>
+</div>
+
+<!-- Botões de emergência -->
+<div class="emergency-buttons" id="emergency-buttons">
+    <button class="emergency-btn" onclick="mostrarInfo('historia')">📖 História</button>
+    <button class="emergency-btn" onclick="mostrarInfo('idade')">🎂 Idade</button>
+    <button class="emergency-btn" onclick="mostrarInfo('habilidade')">⚡ Habilidade</button>
 </div>
 
 <a-scene vr-mode-ui="enabled: false" arjs="sourceType: webcam; debugUIEnabled: false;" embedded style="display: none;" id="ar-scene">
     
     <a-marker preset="hiro" id="marker">
-        <!-- IMAGEM DO PERSONAGEM -->
+        <!-- IMAGEM PRINCIPAL - SEM BOTÕES INICIAIS -->
         <a-image 
             src="imagens/image1.png" 
             position="0 0.5 0" 
             width="1.2" 
             height="1.6"
             rotation="0 180 0"
-        ></a-image>
+            id="main-image"
+            events="click: function() { mostrarInfo('historia'); }"
+        >
+            <!-- TEXTO sobre a imagem -->
+            <a-text 
+                value="Toque para informações" 
+                position="0 -0.8 0" 
+                align="center" 
+                width="2.5"
+                color="yellow"
+            ></a-text>
+        </a-image>
         
-        <!-- BOTÕES -->
-        <a-circle position="0.6 0.3 0.1" radius="0.15" color="#FF6B6B" onclick="mostrarInfo('historia')">
-            <a-text value="📖" position="0 0 0.01" align="center" scale="2 2 1" color="white"></a-text>
-        </a-circle>
-        
-        <a-circle position="0.6 -0.1 0.1" radius="0.15" color="#4ECDC4" onclick="mostrarInfo('idade')">
-            <a-text value="🎂" position="0 0 0.01" align="center" scale="2 2 1" color="white"></a-text>
-        </a-circle>
-        
-        <a-circle position="0.6 -0.5 0.1" radius="0.15" color="#45B7D1" onclick="mostrarInfo('habilidade')">
-            <a-text value="⚡" position="0 0 0.01" align="center" scale="2 2 1" color="white"></a-text>
-        </a-circle>
+        <!-- BOTÕES SERÃO ADICIONADOS DEPOIS via JavaScript -->
     </a-marker>
     
     <a-entity camera></a-entity>
@@ -53,22 +76,22 @@
 </a-scene>
 
 <!-- PAINÉIS DE INFORMAÇÃO -->
-<div id="historia" class="info-panel">
+<div id="historia" class="info-panel" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 20px; border-radius: 15px; text-align: center;">
     <h3>📖 HISTÓRIA</h3>
     <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares.</p>
-    <button class="close-btn" onclick="fecharInfo()">FECHAR</button>
+    <button class="btn" onclick="fecharInfo()" style="background: #ff4444;">FECHAR</button>
 </div>
 
-<div id="idade" class="info-panel">
+<div id="idade" class="info-panel" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 20px; border-radius: 15px; text-align: center;">
     <h3>🎂 IDADE</h3>
     <p>18 anos</p>
-    <button class="close-btn" onclick="fecharInfo()">FECHAR</button>
+    <button class="btn" onclick="fecharInfo()" style="background: #ff4444;">FECHAR</button>
 </div>
 
-<div id="habilidade" class="info-panel">
+<div id="habilidade" class="info-panel" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 20px; border-radius: 15px; text-align: center;">
     <h3>⚡ HABILIDADE</h3>
     <p>Invisibilidade Total - 10 minutos</p>
-    <button class="close-btn" onclick="fecharInfo()">FECHAR</button>
+    <button class="btn" onclick="fecharInfo()" style="background: #ff4444;">FECHAR</button>
 </div>
 
 <script>
@@ -82,8 +105,60 @@ async function iniciarRA() {
         document.getElementById('ar-scene').style.display = 'block';
         document.getElementById('loading').style.display = 'none';
         
+        // Mostrar botões de emergência
+        document.getElementById('emergency-buttons').style.display = 'block';
+        
+        // Tentar adicionar botões AR (se funcionar, ótimo! Se não, temos os de emergência)
+        setTimeout(tentarAdicionarBotoesAR, 3000);
+        
     } catch (error) {
         alert('Erro ao acessar câmera: ' + error.message);
+    }
+}
+
+function tentarAdicionarBotoesAR() {
+    try {
+        const marker = document.getElementById('marker');
+        
+        // Botão História
+        const btn1 = document.createElement('a-circle');
+        btn1.setAttribute('position', '0.6 0.3 0.1');
+        btn1.setAttribute('radius', '0.15');
+        btn1.setAttribute('color', '#FF6B6B');
+        btn1.setAttribute('events', 'click: function() { mostrarInfo("historia"); }');
+        
+        const text1 = document.createElement('a-text');
+        text1.setAttribute('value', '📖');
+        text1.setAttribute('position', '0 0 0.01');
+        text1.setAttribute('align', 'center');
+        text1.setAttribute('scale', '2 2 1');
+        text1.setAttribute('color', '#FFFFFF');
+        btn1.appendChild(text1);
+        
+        // Botão Idade
+        const btn2 = document.createElement('a-circle');
+        btn2.setAttribute('position', '0.6 -0.1 0.1');
+        btn2.setAttribute('radius', '0.15');
+        btn2.setAttribute('color', '#4ECDC4');
+        btn2.setAttribute('events', 'click: function() { mostrarInfo("idade"); }');
+        
+        const text2 = document.createElement('a-text');
+        text2.setAttribute('value', '🎂');
+        text2.setAttribute('position', '0 0 0.01');
+        text2.setAttribute('align', 'center');
+        text2.setAttribute('scale', '2 2 1');
+        text2.setAttribute('color', '#FFFFFF');
+        btn2.appendChild(text2);
+        
+        // Adicionar à cena
+        marker.appendChild(btn1);
+        marker.appendChild(btn2);
+        
+        console.log('✅ Botões AR adicionados com sucesso!');
+        
+    } catch (error) {
+        console.log('⚠️ Botões AR não funcionaram, usando botões de emergência');
+        // Pelo menos temos os botões de emergência!
     }
 }
 
