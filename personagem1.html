@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realidade Aumentada - Correção de Câmera</title>
+    <title>RA Automática - Marcador Hiro</title>
     
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -15,422 +15,258 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            background: #000;
             color: white;
-            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+        
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            text-align: center;
             padding: 20px;
         }
         
-        .container {
-            max-width: 800px;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        .loading-content {
+            max-width: 400px;
+            width: 90%;
         }
         
-        header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #fdbb2d;
-        }
-        
-        .subtitle {
-            font-size: 1.2rem;
+        h2 {
+            font-size: 24px;
             margin-bottom: 20px;
-            color: #ccc;
+            color: #4cc9f0;
         }
         
-        .status-box {
+        .marker-preview {
+            width: 150px;
+            height: 150px;
+            margin: 15px auto;
+            border: 2px solid white;
+            background: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+        }
+        
+        .status {
             background: rgba(255, 0, 0, 0.2);
             border: 1px solid #ff4444;
             border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .status-icon {
-            font-size: 2rem;
-            margin-right: 15px;
-        }
-        
-        .solution-section {
-            background: rgba(30, 30, 60, 0.6);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 25px;
-        }
-        
-        .solution-section h2 {
-            color: #fdbb2d;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #4285f4;
-            padding-bottom: 10px;
-        }
-        
-        .steps {
-            margin-left: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .steps li {
-            margin-bottom: 10px;
-            line-height: 1.6;
-        }
-        
-        .code-block {
-            background: #1e1e1e;
-            border-radius: 5px;
-            padding: 15px;
+            padding: 10px;
             margin: 15px 0;
-            overflow-x: auto;
-            font-family: monospace;
-            font-size: 0.9rem;
         }
         
-        .btn {
-            background: linear-gradient(to right, #1fa2ff, #12d8fa);
+        .info-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 350px;
+            z-index: 1001;
+            text-align: center;
+            border: 2px solid #4cc9f0;
+        }
+        
+        .close-btn {
+            background: #ff4444;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            margin: 10px 5px;
-            cursor: pointer;
-            font-size: 1.1rem;
-            font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-            transition: all 0.3s ease;
-            display: inline-block;
-        }
-        
-        .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
-        
-        .btn-test {
-            background: linear-gradient(to right, #4CAF50, #2E7D32);
-        }
-        
-        .btn-reset {
-            background: linear-gradient(to right, #556270, #ff6b6b);
-        }
-        
-        .test-results {
-            background: rgba(30, 30, 60, 0.6);
-            border-radius: 8px;
-            padding: 20px;
-            margin-top: 20px;
-        }
-        
-        .test-results h2 {
-            color: #fdbb2d;
-            margin-bottom: 15px;
-        }
-        
-        .result-item {
-            margin-bottom: 10px;
-            padding: 10px;
+            padding: 10px 20px;
             border-radius: 5px;
-            background: rgba(0, 0, 0, 0.2);
+            margin-top: 15px;
+            cursor: pointer;
         }
         
-        .success {
-            color: #4CAF50;
-        }
-        
-        .error {
-            color: #FF5252;
-        }
-        
-        .warning {
-            color: #FFC107;
-        }
-        
-        .debug-info {
-            background: rgba(30, 30, 60, 0.6);
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 20px;
-            font-family: monospace;
-            font-size: 0.9rem;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        
-        footer {
-            margin-top: 30px;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.7);
-        }
-        
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .btn {
-                padding: 12px 25px;
-                font-size: 1rem;
-                display: block;
-                width: 100%;
-                margin: 10px 0;
-            }
+        a-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Correção de Erro de Câmera no Chrome</h1>
-            <p class="subtitle">Solução para o problema "Erro ao acessar câmera. Verifique as permissões do navegador"</p>
-        </header>
+
+<div id="loading">
+    <div class="loading-content">
+        <h2>REALIDADE AUMENTADA</h2>
+        <p>Mostre o marcador Hiro para a câmera</p>
         
-        <div class="status-box">
-            <div class="status-icon">⚠️</div>
-            <div class="status-text">
-                <strong>Problema:</strong> Erro ao acessar a câmera no Chrome mesmo com permissões concedidas
-            </div>
-        </div>
+        <div class="marker-preview">H</div>
         
-        <div class="solution-section">
-            <h2>Solução Passo a Passo</h2>
-            
-            <ol class="steps">
-                <li>Verifique se o Chrome está atualizado (versão 64 ou superior)</li>
-                <li>Certifique-se de estar usando HTTPS (obrigatório para acesso à câmera)</li>
-                <li>Limpe o cache e os cookies do site</li>
-                <li>Reinicie o navegador após conceder as permissões</li>
-                <li>Use o código corrigido abaixo para evitar erros de permissão</li>
-            </ol>
-            
-            <h2>Código Corrigido para Acesso à Câmera</h2>
-            
-            <div class="code-block">
-// Função corrigida para acesso à câmera
+        <div class="status" id="status">Iniciando automaticamente...</div>
+        
+        <p>Aguarde a inicialização da câmera</p>
+    </div>
+</div>
+
+<!-- Cena AR -->
+<a-scene 
+    vr-mode-ui="enabled: false"
+    arjs="sourceType: webcam; debugUIEnabled: false;"
+    renderer="logarithmicDepthBuffer: true;"
+    embedded
+    style="position: absolute; width: 100%; height: 100%; display: none;"
+    id="ar-scene"
+>
+    
+    <!-- Marcador HIRO -->
+    <a-marker preset="hiro" id="marker">
+        
+        <!-- Imagem do Personagem -->
+        <a-image 
+            src="https://cdn.glitch.global/6d5dff6f-2e4f-4d34-8f5c-5ff5c63c7c3e/image1.png?v=1739221063714" 
+            position="0 0.5 0" 
+            width="1.2" 
+            height="1.6"
+            rotation="0 180 0"
+        ></a-image>
+        
+        <!-- Botão História -->
+        <a-circle 
+            position="0.6 0.3 0.1" 
+            radius="0.15" 
+            color="#FF6B6B"
+            material="shader: flat; opacity: 0.9"
+            onclick="showInfo('historia')"
+            animation="property: scale; from: 1 1 1; to: 1.2 1.2 1; dur: 1000; loop: true; dir: alternate"
+        >
+            <a-text value="📖" position="0 0 0.01" align="center" scale="2 2 1" color="#FFFFFF"></a-text>
+        </a-circle>
+        
+        <!-- Botão Idade -->
+        <a-circle 
+            position="0.6 -0.1 0.1" 
+            radius="0.15" 
+            color="#4ECDC4"
+            material="shader: flat; opacity: 0.9"
+            onclick="showInfo('idade')"
+            animation="property: scale; from: 1 1 1; to: 1.2 1.2 1; dur: 1000; loop: true; dir: alternate; delay: 200"
+        >
+            <a-text value="🎂" position="0 0 0.01" align="center" scale="2 2 1" color="#FFFFFF"></a-text>
+        </a-circle>
+        
+        <!-- Botão Habilidade -->
+        <a-circle 
+            position="0.6 -0.5 0.1" 
+            radius="0.15" 
+            color="#45B7D1"
+            material="shader: flat; opacity: 0.9"
+            onclick="showInfo('habilidade')"
+            animation="property: scale; from: 1 1 1; to: 1.2 1.2 1; dur: 1000; loop: true; dir: alternate; delay: 400"
+        >
+            <a-text value="⚡" position="0 0 0.01" align="center" scale="2 2 1" color="#FFFFFF"></a-text>
+        </a-circle>
+        
+    </a-marker>
+    
+    <a-entity camera></a-entity>
+    
+</a-scene>
+
+<!-- Painéis de Informação -->
+<div id="historia" class="info-panel">
+    <h3>📖 HISTÓRIA</h3>
+    <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares dos perigos da cidade.</p>
+    <button class="close-btn" onclick="hideInfo()">FECHAR</button>
+</div>
+
+<div id="idade" class="info-panel">
+    <h3>🎂 IDADE</h3>
+    <p>18 anos</p>
+    <button class="close-btn" onclick="hideInfo()">FECHAR</button>
+</div>
+
+<div id="habilidade" class="info-panel">
+    <h3>⚡ HABILIDADE</h3>
+    <p>Invisibilidade Total - Pode ficar invisível por até 10 minutos</p>
+    <button class="close-btn" onclick="hideInfo()">FECHAR</button>
+</div>
+
+<script>
+// Elementos
+const loading = document.getElementById('loading');
+const arScene = document.getElementById('ar-scene');
+const status = document.getElementById('status');
+
+// Inicia automaticamente
+window.addEventListener('load', function() {
+    setTimeout(startAR, 1000);
+});
+
+// Função para iniciar a realidade aumentada
 async function startAR() {
     try {
-        // Verifica se a API de mídia está disponível
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            throw new Error('Seu navegador não suporta acesso à câmera');
-        }
+        status.textContent = "Solicitando acesso à câmera...";
         
-        // Solicita permissão para acessar a câmera
+        // Testar câmera primeiro
         const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: {
-                facingMode: 'environment', // Usa a câmera traseira
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            } 
-        }).catch(error => {
-            // Trata erros específicos de permissão
-            if (error.name === 'NotAllowedError') {
-                throw new Error('Permissão de câmera negada. Por favor, permita o acesso à câmera nas configurações do seu navegador.');
-            } else if (error.name === 'NotFoundError') {
-                throw new Error('Nenhuma câmera encontrada. Verifique se seu dispositivo possui uma câmera.');
-            } else {
-                throw new Error(`Não foi possível acessar a câmera: ${error.message}`);
-            }
+            video: true
         });
         
-        // Para a visualização de teste
+        // Parar teste
         stream.getTracks().forEach(track => track.stop());
         
-        // Inicia a cena de AR
+        // Iniciar AR
         arScene.style.display = 'block';
         loading.style.display = 'none';
         
-        console.log('Câmera acessada com sucesso!');
-        
     } catch (error) {
         console.error('Erro na câmera:', error);
-        showError(error.message);
+        status.textContent = "Erro: " + error.message;
+        status.style.background = "rgba(255, 0, 0, 0.3)";
+        
+        // Tentar novamente após 3 segundos
+        setTimeout(startAR, 3000);
     }
 }
-            </div>
-            
-            <div class="btn-group">
-                <button class="btn btn-test" onclick="testCamera()">Testar Câmera</button>
-                <button class="btn btn-reset" onclick="resetPermissions()">Redefinir Permissões</button>
-                <button class="btn" onclick="window.location.reload()">Recarregar Página</button>
-            </div>
-        </div>
-        
-        <div class="test-results">
-            <h2>Resultados do Teste</h2>
-            <div class="result-item" id="test-result">
-                Clique em "Testar Câmera" para verificar o acesso
-            </div>
-            
-            <div class="debug-info">
-                <div id="debug-output">
-                    > Sistema de diagnóstico inicializado<br>
-                    > Navegador: <span id="browser-info"></span><br>
-                    > HTTPS: <span id="https-status">Verificando...</span><br>
-                    > API de mídia: <span id="media-api-status">Verificando...</span><br>
-                    > Permissões: <span id="permission-status">Verificando...</span><br>
-                </div>
-            </div>
-        </div>
-        
-        <footer>
-            <p>Sistema de Realidade Aumentada | Solução para problemas de câmera no Chrome</p>
-        </footer>
-    </div>
 
-    <script>
-        // Inicialização da página
-        document.addEventListener('DOMContentLoaded', function() {
-            // Informações do navegador
-            document.getElementById('browser-info').textContent = navigator.userAgent;
-            
-            // Verifica se está usando HTTPS
-            document.getElementById('https-status').textContent = 
-                window.location.protocol === 'https:' ? '✅ Sim' : '❌ Não (obrigatório para câmera)';
-            document.getElementById('https-status').className = 
-                window.location.protocol === 'https:' ? 'success' : 'error';
-            
-            // Verifica se a API de mídia está disponível
-            const mediaApiAvailable = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
-            document.getElementById('media-api-status').textContent = 
-                mediaApiAvailable ? '✅ Disponível' : '❌ Não disponível';
-            document.getElementById('media-api-status').className = 
-                mediaApiAvailable ? 'success' : 'error';
-            
-            // Verifica permissões de câmera
-            checkCameraPermissions();
+function showInfo(type) {
+    document.getElementById(type).style.display = 'block';
+}
+
+function hideInfo() {
+    document.querySelectorAll('.info-panel').forEach(panel => {
+        panel.style.display = 'none';
+    });
+}
+
+// Eventos de detecção do marcador
+document.addEventListener('DOMContentLoaded', function() {
+    const marker = document.getElementById('marker');
+    if (marker) {
+        marker.addEventListener('markerFound', function() {
+            console.log('Marcador detectado!');
         });
         
-        // Função para testar a câmera
-        async function testCamera() {
-            const testResult = document.getElementById('test-result');
-            testResult.innerHTML = 'Testando acesso à câmera...';
-            
-            try {
-                // Verifica se a API de mídia está disponível
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    throw new Error('Seu navegador não suporta acesso à câmera');
-                }
-                
-                // Solicita permissão para acessar a câmera
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: {
-                        facingMode: 'environment',
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    } 
-                }).catch(error => {
-                    // Trata erros específicos de permissão
-                    if (error.name === 'NotAllowedError') {
-                        throw new Error('Permissão de câmera negada. Por favor, permita o acesso à câmera nas configurações do seu navegador.');
-                    } else if (error.name === 'NotFoundError') {
-                        throw new Error('Nenhuma câmera encontrada. Verifique se seu dispositivo possui uma câmera.');
-                    } else if (error.name === 'OverconstrainedError') {
-                        throw new Error('As configurações solicitadas não podem ser atendidas pela câmera disponível.');
-                    } else {
-                        throw new Error(`Não foi possível acessar a câmera: ${error.message}`);
-                    }
-                });
-                
-                // Para a visualização de teste
-                stream.getTracks().forEach(track => track.stop());
-                
-                testResult.innerHTML = '✅ <strong>Sucesso!</strong> Câmera acessada com sucesso.';
-                testResult.className = 'result-item success';
-                
-                // Atualiza status de permissões
-                document.getElementById('permission-status').textContent = '✅ Concedidas';
-                document.getElementById('permission-status').className = 'success';
-                
-            } catch (error) {
-                testResult.innerHTML = `❌ <strong>Erro:</strong> ${error.message}`;
-                testResult.className = 'result-item error';
-                
-                document.getElementById('permission-status').textContent = '❌ Negadas';
-                document.getElementById('permission-status').className = 'error';
-                
-                // Adiciona ao log de debug
-                const debugOutput = document.getElementById('debug-output');
-                debugOutput.innerHTML += `> Erro: ${error.message}<br>`;
-            }
-        }
-        
-        // Função para verificar permissões de câmera
-        async function checkCameraPermissions() {
-            const permissionStatus = document.getElementById('permission-status');
-            
-            try {
-                // Verifica se a API Permissions está disponível
-                if (navigator.permissions && navigator.permissions.query) {
-                    const permission = await navigator.permissions.query({ name: 'camera' });
-                    
-                    permissionStatus.textContent = 
-                        permission.state === 'granted' ? '✅ Concedidas' :
-                        permission.state === 'prompt' ? '⚠️ Não decididas' : '❌ Negadas';
-                    
-                    permissionStatus.className = 
-                        permission.state === 'granted' ? 'success' :
-                        permission.state === 'prompt' ? 'warning' : 'error';
-                        
-                    // Monitora mudanças no estado da permissão
-                    permission.onchange = function() {
-                        permissionStatus.textContent = 
-                            this.state === 'granted' ? '✅ Concedidas' :
-                            this.state === 'prompt' ? '⚠️ Não decididas' : '❌ Negadas';
-                            
-                        permissionStatus.className = 
-                            this.state === 'granted' ? 'success' :
-                            this.state === 'prompt' ? 'warning' : 'error';
-                    };
-                } else {
-                    permissionStatus.textContent = '⚠️ API de Permissões não disponível';
-                    permissionStatus.className = 'warning';
-                }
-            } catch (error) {
-                permissionStatus.textContent = '⚠️ Não foi possível verificar permissões';
-                permissionStatus.className = 'warning';
-            }
-        }
-        
-        // Função para redefinir permissões (apenas para demonstração)
-        function resetPermissions() {
-            if (confirm('Isso irá redefinir as permissões de câmera para este site. Deseja continuar?')) {
-                // Na prática, não é possível redefinir programaticamente as permissões
-                // Isso é apenas para demonstração
-                document.getElementById('permission-status').textContent = '⚠️ Não decididas';
-                document.getElementById('permission-status').className = 'warning';
-                
-                const debugOutput = document.getElementById('debug-output');
-                debugOutput.innerHTML += '> Permissões redefinidas (em demonstração)<br>';
-                
-                alert('Para redefinir completamente as permissões, acesse as configurações do Chrome e limpe os dados de navegação para este site.');
-            }
-        }
-        
-        // Função para mostrar erro
-        function showError(message) {
-            const debugOutput = document.getElementById('debug-output');
-            debugOutput.innerHTML += `> Erro: ${message}<br>`;
-            debugOutput.scrollTop = debugOutput.scrollHeight;
-            
-            alert(message);
-        }
-    </script>
+        marker.addEventListener('markerLost', function() {
+            console.log('Marcador perdido!');
+        });
+    }
+});
+</script>
+
 </body>
 </html>
