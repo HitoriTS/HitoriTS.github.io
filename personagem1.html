@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA Automática - Marcador Hiro</title>
+    <title>RA Simplificada - Marcador Hiro</title>
     
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <!-- AR.js -->
+    <!-- AR.js com fallback -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     
     <style>
@@ -15,13 +15,15 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
         
         body {
             background: #000;
             color: white;
-            font-family: Arial, sans-serif;
             overflow: hidden;
+            width: 100vw;
+            height: 100vh;
         }
         
         #loading {
@@ -30,7 +32,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.95);
+            background: #000;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -40,12 +42,7 @@
             padding: 20px;
         }
         
-        .loading-content {
-            max-width: 400px;
-            width: 90%;
-        }
-        
-        h2 {
+        h1 {
             font-size: 24px;
             margin-bottom: 20px;
             color: #4cc9f0;
@@ -55,7 +52,7 @@
             width: 150px;
             height: 150px;
             margin: 15px auto;
-            border: 2px solid white;
+            border: 2px solid #4cc9f0;
             background: white;
             display: flex;
             justify-content: center;
@@ -64,11 +61,13 @@
         }
         
         .status {
-            background: rgba(255, 0, 0, 0.2);
-            border: 1px solid #ff4444;
+            background: rgba(76, 201, 240, 0.2);
+            border: 1px solid #4cc9f0;
             border-radius: 8px;
             padding: 10px;
             margin: 15px 0;
+            max-width: 400px;
+            width: 100%;
         }
         
         .info-panel {
@@ -89,13 +88,14 @@
         }
         
         .close-btn {
-            background: #ff4444;
-            color: white;
+            background: #4cc9f0;
+            color: black;
             border: none;
             padding: 10px 20px;
             border-radius: 5px;
             margin-top: 15px;
             cursor: pointer;
+            font-weight: bold;
         }
         
         a-scene {
@@ -105,27 +105,44 @@
             width: 100%;
             height: 100%;
         }
+        
+        .instructions {
+            margin-top: 20px;
+            max-width: 400px;
+        }
+        
+        .btn {
+            background: #4cc9f0;
+            color: black;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
 
 <div id="loading">
-    <div class="loading-content">
-        <h2>REALIDADE AUMENTADA</h2>
-        <p>Mostre o marcador Hiro para a câmera</p>
-        
-        <div class="marker-preview">H</div>
-        
-        <div class="status" id="status">Iniciando automaticamente...</div>
-        
-        <p>Aguarde a inicialização da câmera</p>
+    <h1>REALIDADE AUMENTADA</h1>
+    
+    <div class="marker-preview">H</div>
+    
+    <div class="status" id="status">Preparando sistema de realidade aumentada...</div>
+    
+    <div class="instructions">
+        <p>Quando a câmera iniciar, mostre o marcador Hiro para visualizar o personagem.</p>
     </div>
+    
+    <button class="btn" id="retry-btn" style="display:none;" onclick="initAR()">Tentar Novamente</button>
 </div>
 
 <!-- Cena AR -->
 <a-scene 
     vr-mode-ui="enabled: false"
-    arjs="sourceType: webcam; debugUIEnabled: false;"
+    arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
     renderer="logarithmicDepthBuffer: true;"
     embedded
     style="position: absolute; width: 100%; height: 100%; display: none;"
@@ -210,39 +227,67 @@
 const loading = document.getElementById('loading');
 const arScene = document.getElementById('ar-scene');
 const status = document.getElementById('status');
+const retryBtn = document.getElementById('retry-btn');
 
-// Inicia automaticamente
+// Inicia automaticamente quando a página carrega
 window.addEventListener('load', function() {
-    setTimeout(startAR, 1000);
+    initAR();
 });
 
-// Função para iniciar a realidade aumentada
-async function startAR() {
-    try {
-        status.textContent = "Solicitando acesso à câmera...";
-        
-        // Testar câmera primeiro
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: true
-        });
-        
-        // Parar teste
+// Função principal para inicializar AR
+function initAR() {
+    status.textContent = "Iniciando sistema de realidade aumentada...";
+    retryBtn.style.display = 'none';
+    
+    // Verificar se A-Frame e AR.js estão carregados
+    if (typeof AFRAME === 'undefined' || !AFRAME.components['arjs']) {
+        status.textContent = "Erro: Bibliotecas não carregadas. Recarregue a página.";
+        retryBtn.style.display = 'block';
+        return;
+    }
+    
+    // Verificar se temos acesso à câmera
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        status.textContent = "Seu navegador não suporta acesso à câmera.";
+        retryBtn.style.display = 'block';
+        return;
+    }
+    
+    // Solicitar acesso à câmera
+    navigator.mediaDevices.getUserMedia({ video: true })
+    .then(function(stream) {
+        // Parar a prévia da câmera (não é necessária para AR.js)
         stream.getTracks().forEach(track => track.stop());
         
-        // Iniciar AR
+        // Iniciar a cena AR
         arScene.style.display = 'block';
         loading.style.display = 'none';
         
-    } catch (error) {
-        console.error('Erro na câmera:', error);
-        status.textContent = "Erro: " + error.message;
-        status.style.background = "rgba(255, 0, 0, 0.3)";
+        // Configurar eventos do marcador
+        setupMarkerEvents();
+    })
+    .catch(function(error) {
+        console.error('Erro ao acessar câmera:', error);
+        status.textContent = "Erro ao acessar a câmera: " + error.message;
+        retryBtn.style.display = 'block';
+    });
+}
+
+// Configurar eventos do marcador
+function setupMarkerEvents() {
+    const marker = document.getElementById('marker');
+    if (marker) {
+        marker.addEventListener('markerFound', function() {
+            console.log('Marcador Hiro detectado!');
+        });
         
-        // Tentar novamente após 3 segundos
-        setTimeout(startAR, 3000);
+        marker.addEventListener('markerLost', function() {
+            console.log('Marcador Hiro perdido.');
+        });
     }
 }
 
+// Funções para os painéis de informação
 function showInfo(type) {
     document.getElementById(type).style.display = 'block';
 }
@@ -253,19 +298,13 @@ function hideInfo() {
     });
 }
 
-// Eventos de detecção do marcador
-document.addEventListener('DOMContentLoaded', function() {
-    const marker = document.getElementById('marker');
-    if (marker) {
-        marker.addEventListener('markerFound', function() {
-            console.log('Marcador detectado!');
-        });
-        
-        marker.addEventListener('markerLost', function() {
-            console.log('Marcador perdido!');
-        });
+// Fallback: Se algo der errado, oferecer botão de retry
+setTimeout(function() {
+    if (loading.style.display !== 'none') {
+        status.textContent = "Se o sistema não iniciou automaticamente, clique em 'Tentar Novamente'.";
+        retryBtn.style.display = 'block';
     }
-});
+}, 8000);
 </script>
 
 </body>
