@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Personagem 1 - RA Completa</title>
+    <title>Personagem 1 - RA Teste</title>
     
     <!-- A-Frame -->
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
@@ -43,45 +43,22 @@
             cursor: pointer;
         }
         
-        /* Painéis de informação */
-        .info-panel {
-            display: none;
+        #debug {
             position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 400px;
-            z-index: 1001;
-            text-align: center;
-            border: 2px solid #4285f4;
-        }
-        
-        .close-btn {
-            background: #ff4444;
-            color: white;
-            border: none;
-            padding: 10px 20px;
+            top: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
             border-radius: 5px;
-            margin-top: 15px;
-            cursor: pointer;
-        }
-        
-        /* Botões AR visíveis */
-        .ar-button {
-            opacity: 1 !important;
-            visibility: visible !important;
+            font-size: 12px;
+            z-index: 1000;
         }
     </style>
 </head>
 <body>
 
 <div id="loading">
-    <h2>🎮 REALIDADE AUMENTADA</h2>
+    <h2>🎯 TESTE DE DETECÇÃO</h2>
     <p>Mostre o marcador Hiro para a câmera</p>
     <img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" 
          width="100" 
@@ -90,119 +67,42 @@
     <button class="btn" onclick="startAR()">📷 INICIAR CÂMERA</button>
 </div>
 
-<!-- Cena AR -->
+<div id="debug" style="display: none;">
+    Status: <span id="status">Carregando...</span>
+</div>
+
+<!-- Cena AR MUITO SIMPLES -->
 <a-scene 
     vr-mode-ui="enabled: false"
-    arjs="sourceType: webcam; debugUIEnabled: false;"
+    arjs="sourceType: webcam; debugUIEnabled: true;"  <!-- DEBUG LIGADO -->
     renderer="logarithmicDepthBuffer: true;"
     embedded
     style="display: none;"
     id="ar-scene"
 >
     
-    <!-- Marcador HIRO -->
-    <a-marker preset="hiro" id="marker">
-        
-        <!-- Imagem do Personagem - ROTAÇÃO CORRIGIDA -->
-        <a-image 
-            src="imagens/image1.png" 
-            position="0 0.5 0" 
-            width="1.2" 
-            height="1.6"
-            rotation="0 180 0" <!-- ⬅️ ROTAÇÃO 180° CORRIGIDA -->
-            material="transparent: true; alphaTest: 0.5"
-        ></a-image>
-        
-        <!-- BOTÕES DISTRIBUÍDOS -->
-        <!-- Botão História -->
-        <a-circle 
-            position="0.6 0.3 0.1" 
-            radius="0.15" 
-            color="#FF6B6B"
-            material="shader: flat; opacity: 0.9"
-            class="ar-button"
-            events="click: function() { showInfo('historia'); }"
-            animation="property: scale; from: 1 1 1; to: 1.2 1.2 1; dur: 1000; loop: true; dir: alternate"
-        >
-            <a-text 
-                value="📖" 
-                position="0 0 0.01" 
-                align="center" 
-                scale="2 2 1"
-                color="#FFFFFF"
-            ></a-text>
-        </a-circle>
-        
-        <!-- Botão Idade -->
-        <a-circle 
-            position="0.6 -0.1 0.1" 
-            radius="0.15" 
-            color="#4ECDC4"
-            material="shader: flat; opacity: 0.9"
-            class="ar-button"
-            events="click: function() { showInfo('idade'); }"
-            animation="property: scale; from: 1 1 1; to: 1.2 1.2 1; dur: 1000; loop: true; dir: alternate; delay: 200"
-        >
-            <a-text 
-                value="🎂" 
-                position="0 0 0.01" 
-                align="center" 
-                scale="2 2 1"
-                color="#FFFFFF"
-            ></a-text>
-        </a-circle>
-        
-        <!-- Botão Habilidade -->
-        <a-circle 
-            position="0.6 -0.5 0.1" 
-            radius="0.15" 
-            color="#45B7D1"
-            material="shader: flat; opacity: 0.9"
-            class="ar-button"
-            events="click: function() { showInfo('habilidade'); }"
-            animation="property: scale; from: 1 1 1; to: 1.2 1.2 1; dur: 1000; loop: true; dir: alternate; delay: 400"
-        >
-            <a-text 
-                value="⚡" 
-                position="0 0 0.01" 
-                align="center" 
-                scale="2 2 1"
-                color="#FFFFFF"
-            ></a-text>
-        </a-circle>
-        
+    <!-- Marcador HIRO SIMPLES -->
+    <a-marker preset="hiro">
+        <a-box position="0 0.5 0" rotation="0 45 45" color="#4CC3D9"></a-box>
+        <a-text value="FUNCIONOU!" position="0 1 0" color="yellow"></a-text>
     </a-marker>
     
     <a-entity camera></a-entity>
     
 </a-scene>
 
-<!-- Painéis de Informação -->
-<div id="historia" class="info-panel">
-    <h3>📖 HISTÓRIA</h3>
-    <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares dos perigos da cidade.</p>
-    <button class="close-btn" onclick="hideInfo()">FECHAR</button>
-</div>
-
-<div id="idade" class="info-panel">
-    <h3>🎂 IDADE</h3>
-    <p>18 anos</p>
-    <button class="close-btn" onclick="hideInfo()">FECHAR</button>
-</div>
-
-<div id="habilidade" class="info-panel">
-    <h3>⚡ HABILIDADE</h3>
-    <p>Invisibilidade Total - Pode ficar invisível por até 10 minutos</p>
-    <button class="close-btn" onclick="hideInfo()">FECHAR</button>
-</div>
-
 <script>
 // Elementos
 const loading = document.getElementById('loading');
 const arScene = document.getElementById('ar-scene');
+const debug = document.getElementById('debug');
+const status = document.getElementById('status');
 
 async function startAR() {
     try {
+        status.textContent = "Solicitando câmera...";
+        debug.style.display = 'block';
+        
         // Testar câmera primeiro
         const stream = await navigator.mediaDevices.getUserMedia({ 
             video: { facingMode: 'environment' }
@@ -214,39 +114,36 @@ async function startAR() {
         // IniciAR AR
         arScene.style.display = 'block';
         loading.style.display = 'none';
+        status.textContent = "Aguardando marcador Hiro...";
         
-        // Forçar botões visíveis após carregamento
-        setTimeout(forceButtonsVisible, 2000);
+        // Eventos de debug
+        const marker = document.querySelector('a-marker');
+        if (marker) {
+            marker.addEventListener('markerFound', () => {
+                status.textContent = "✅ Marcador DETECTADO!";
+                status.style.color = "green";
+            });
+            
+            marker.addEventListener('markerLost', () => {
+                status.textContent = "❌ Marcador PERDIDO";
+                status.style.color = "red";
+            });
+        }
         
     } catch (error) {
-        console.error('Erro na câmera:', error);
-        alert('Erro ao acessar câmera: ' + error.message);
+        status.textContent = "❌ Erro: " + error.message;
+        status.style.color = "red";
     }
-}
-
-function forceButtonsVisible() {
-    const buttons = document.querySelectorAll('.ar-button');
-    buttons.forEach(button => {
-        button.setAttribute('opacity', '1');
-        button.setAttribute('visible', 'true');
-    });
-    console.log('Botões forçados a aparecer');
-}
-
-function showInfo(type) {
-    document.getElementById(type).style.display = 'block';
-}
-
-function hideInfo() {
-    document.querySelectorAll('.info-panel').forEach(panel => {
-        panel.style.display = 'none';
-    });
 }
 
 // Auto-iniciar em mobile
 if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
     setTimeout(startAR, 1000);
 }
+
+// Debug
+console.log("AR.js carregado:", !!window.AR);
+console.log("A-Frame carregado:", !!window.AFRAME);
 </script>
 
 </body>
