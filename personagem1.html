@@ -2,277 +2,62 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Personagem 1 - RA Funcional</title>
-    
-    <!-- A-Frame -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RA Simples e Funcional</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-    <!-- AR.js -->
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
-    
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background: #000;
-            color: white;
-            font-family: Arial;
-            overflow: hidden;
-        }
-        
-        #loading {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            z-index: 1000;
-            background: rgba(0,0,0,0.9);
-            padding: 30px;
-            border-radius: 20px;
-            border: 2px solid #4285f4;
-        }
-        
-        .btn {
-            background: #4285f4;
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 25px;
-            margin: 10px;
-            cursor: pointer;
-        }
-        
-        #debug {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 12px;
-            z-index: 1000;
-        }
-        
-        .info-panel {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.95);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 400px;
-            z-index: 1001;
-            text-align: center;
-            border: 2px solid #4285f4;
-        }
-        
-        .close-btn {
-            background: #ff4444;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            margin-top: 15px;
-            cursor: pointer;
-        }
+        body { margin: 0; overflow: hidden; background: black; color: white; font-family: Arial; }
+        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .btn { background: #4285f4; color: white; border: none; padding: 15px 30px; border-radius: 25px; margin: 10px; }
     </style>
 </head>
 <body>
 
 <div id="loading">
-    <h2>🎯 REALIDADE AUMENTADA</h2>
-    <p>Mostre o marcador Hiro para a câmera</p>
-    <img src="https://raw.githubusercontent.com/AR-js-org/AR.js/master/data/images/hiro.png" 
-         width="120" 
-         style="border: 3px solid white; margin: 15px; background: white;">
+    <h2>🚀 Vamos testar o BÁSICO</h2>
+    <p>Primeiro, vamos ver se a imagem existe:</p>
+    <button class="btn" onclick="testarImagem()">1️⃣ TESTAR IMAGEM</button>
     <br>
-    <button class="btn" onclick="startAR()">📷 INICIAR EXPERIÊNCIA</button>
+    <button class="btn" onclick="testarAR()">2️⃣ TESTAR AR</button>
 </div>
 
-<div id="debug" style="display: none;">
-    🔍 <span id="status">Pronto para iniciar...</span>
-</div>
-
-<!-- Cena AR SIMPLIFICADA -->
-<a-scene 
-    vr-mode-ui="enabled: false"
-    arjs="sourceType: webcam; debugUIEnabled: false;"
-    renderer="logarithmicDepthBuffer: true;"
-    embedded
-    style="display: none;"
-    id="ar-scene"
->
-    
-    <!-- Marcador HIRO -->
-    <a-marker preset="hiro" id="marker">
-        
-        <!-- PRIMEIRO: Testar com forma geométrica -->
-        <a-box 
-            position="0 0.5 0" 
-            width="1.0" 
-            height="1.4" 
-            depth="0.1"
-            color="#FF6B6B"
-            rotation="0 180 0"
-        >
-            <a-text 
-                value="TESTE" 
-                position="0 0 0.06" 
-                align="center" 
-                color="white"
-                width="5"
-            ></a-text>
-        </a-box>
-        
+<a-scene vr-mode-ui="enabled: false" arjs="sourceType: webcam; debugUIEnabled: false;" embedded style="display: none;" id="ar-scene">
+    <a-marker preset="hiro">
+        <a-box position="0 0.5 0" color="red" rotation="0 180 0"></a-box>
     </a-marker>
-    
     <a-entity camera></a-entity>
-    
 </a-scene>
 
-<!-- Painéis de Informação -->
-<div id="historia" class="info-panel">
-    <h3>📖 HISTÓRIA</h3>
-    <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares.</p>
-    <button class="close-btn" onclick="hideInfo()">FECHAR</button>
-</div>
-
 <script>
-// Elementos
-const loading = document.getElementById('loading');
-const arScene = document.getElementById('ar-scene');
-const debug = document.getElementById('debug');
-const status = document.getElementById('status');
-
-async function startAR() {
+async function testarImagem() {
     try {
-        status.textContent = "🔄 Iniciando câmera...";
-        debug.style.display = 'block';
-        
+        const response = await fetch('imagens/image1.png');
+        if (response.ok) {
+            alert('✅ Imagem EXISTE em: imagens/image1.png');
+        } else {
+            alert('❌ Imagem NÃO encontrada! Verifique a pasta imagens/');
+        }
+    } catch (error) {
+        alert('❌ Erro ao acessar imagem: ' + error.message);
+    }
+}
+
+async function testarAR() {
+    try {
         // Testar câmera
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: 'environment' }
-        });
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         stream.getTracks().forEach(track => track.stop());
         
-        // Mostrar cena AR
-        arScene.style.display = 'block';
-        loading.style.display = 'none';
-        status.textContent = "📱 Aponte para o marcador Hiro";
+        // Mostrar AR
+        document.getElementById('ar-scene').style.display = 'block';
+        document.getElementById('loading').style.display = 'none';
         
-        // Configurar detecção
-        setupDetection();
-        
+        alert('✅ AR Iniciado! Mostre o marcador Hiro');
     } catch (error) {
-        status.textContent = "❌ Erro: " + error.message;
-        status.style.color = "red";
+        alert('❌ Erro na câmera: ' + error.message);
     }
-}
-
-function setupDetection() {
-    const marker = document.getElementById('marker');
-    
-    marker.addEventListener('markerFound', () => {
-        status.textContent = "✅ MARCADOR DETECTADO!";
-        status.style.color = "green";
-        
-        // Tentar carregar a imagem depois da detecção
-        setTimeout(loadImage, 1000);
-    });
-    
-    marker.addEventListener('markerLost', () => {
-        status.textContent = "🔍 Procurando marcador...";
-        status.style.color = "yellow";
-    });
-}
-
-function loadImage() {
-    // Remover o cubo de teste
-    const marker = document.getElementById('marker');
-    const testBox = marker.querySelector('a-box');
-    if (testBox) {
-        testBox.parentNode.removeChild(testBox);
-    }
-    
-    // Adicionar a imagem
-    const imageEntity = document.createElement('a-image');
-    imageEntity.setAttribute('src', 'imagens/image1.png');
-    imageEntity.setAttribute('position', '0 0.5 0');
-    imageEntity.setAttribute('width', '1.2');
-    imageEntity.setAttribute('height', '1.6');
-    imageEntity.setAttribute('rotation', '0 180 0');
-    imageEntity.setAttribute('material', 'transparent: true; alphaTest: 0.01');
-    
-    // Verificar se a imagem carrega
-    imageEntity.addEventListener('loaded', () => {
-        status.textContent = "✅ IMAGEM CARREGADA!";
-        console.log('Imagem carregada com sucesso!');
-        
-        // Adicionar botões depois que a imagem carregar
-        addButtons();
-    });
-    
-    imageEntity.addEventListener('error', () => {
-        status.textContent = "❌ ERRO: Imagem não carregou";
-        status.style.color = "red";
-        console.error('Erro ao carregar imagem');
-        
-        // Voltar para o cubo de teste
-        const box = document.createElement('a-box');
-        box.setAttribute('position', '0 0.5 0');
-        box.setAttribute('width', '1.0');
-        box.setAttribute('height', '1.4');
-        box.setAttribute('depth', '0.1');
-        box.setAttribute('color', '#4ECDC4');
-        box.setAttribute('rotation', '0 180 0');
-        marker.appendChild(box);
-    });
-    
-    marker.appendChild(imageEntity);
-}
-
-function addButtons() {
-    const marker = document.getElementById('marker');
-    
-    // Botão História
-    const btnHistory = document.createElement('a-circle');
-    btnHistory.setAttribute('position', '0.6 0.3 0.1');
-    btnHistory.setAttribute('radius', '0.15');
-    btnHistory.setAttribute('color', '#FF6B6B');
-    btnHistory.setAttribute('material', 'shader: flat; opacity: 0.9');
-    btnHistory.setAttribute('events', 'click: function() { showInfo("historia"); }');
-    
-    const textHistory = document.createElement('a-text');
-    textHistory.setAttribute('value', '📖');
-    textHistory.setAttribute('position', '0 0 0.01');
-    textHistory.setAttribute('align', 'center');
-    textHistory.setAttribute('scale', '2 2 1');
-    textHistory.setAttribute('color', '#FFFFFF');
-    btnHistory.appendChild(textHistory);
-    
-    marker.appendChild(btnHistory);
-}
-
-function showInfo(type) {
-    document.getElementById(type).style.display = 'block';
-}
-
-function hideInfo() {
-    document.querySelectorAll('.info-panel').forEach(panel => {
-        panel.style.display = 'none';
-    });
-}
-
-// Auto-iniciar em mobile
-if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-    setTimeout(startAR, 1000);
 }
 </script>
-
 </body>
 </html>
