@@ -3,60 +3,103 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RA Simples e Funcional</title>
+    <title>Personagem 1 - RA Completa</title>
     <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.0/aframe/build/aframe-ar.js"></script>
     <style>
         body { margin: 0; overflow: hidden; background: black; color: white; font-family: Arial; }
-        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        #loading { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 1000; }
         .btn { background: #4285f4; color: white; border: none; padding: 15px 30px; border-radius: 25px; margin: 10px; }
+        .info-panel { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); padding: 20px; border-radius: 15px; text-align: center; }
+        .close-btn { background: #ff4444; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div id="loading">
-    <h2>🚀 Vamos testar o BÁSICO</h2>
-    <p>Primeiro, vamos ver se a imagem existe:</p>
-    <button class="btn" onclick="testarImagem()">1️⃣ TESTAR IMAGEM</button>
-    <br>
-    <button class="btn" onclick="testarAR()">2️⃣ TESTAR AR</button>
+    <h2>🎮 REALIDADE AUMENTADA</h2>
+    <p>Mostre o marcador Hiro para a câmera</p>
+    <button class="btn" onclick="iniciarRA()">📷 INICIAR EXPERIÊNCIA</button>
 </div>
 
 <a-scene vr-mode-ui="enabled: false" arjs="sourceType: webcam; debugUIEnabled: false;" embedded style="display: none;" id="ar-scene">
-    <a-marker preset="hiro">
-        <a-box position="0 0.5 0" color="red" rotation="0 180 0"></a-box>
+    
+    <a-marker preset="hiro" id="marker">
+        <!-- IMAGEM DO PERSONAGEM -->
+        <a-image 
+            src="imagens/image1.png" 
+            position="0 0.5 0" 
+            width="1.2" 
+            height="1.6"
+            rotation="0 180 0"
+        ></a-image>
+        
+        <!-- BOTÕES -->
+        <a-circle position="0.6 0.3 0.1" radius="0.15" color="#FF6B6B" onclick="mostrarInfo('historia')">
+            <a-text value="📖" position="0 0 0.01" align="center" scale="2 2 1" color="white"></a-text>
+        </a-circle>
+        
+        <a-circle position="0.6 -0.1 0.1" radius="0.15" color="#4ECDC4" onclick="mostrarInfo('idade')">
+            <a-text value="🎂" position="0 0 0.01" align="center" scale="2 2 1" color="white"></a-text>
+        </a-circle>
+        
+        <a-circle position="0.6 -0.5 0.1" radius="0.15" color="#45B7D1" onclick="mostrarInfo('habilidade')">
+            <a-text value="⚡" position="0 0 0.01" align="center" scale="2 2 1" color="white"></a-text>
+        </a-circle>
     </a-marker>
+    
     <a-entity camera></a-entity>
+    
 </a-scene>
 
-<script>
-async function testarImagem() {
-    try {
-        const response = await fetch('imagens/image1.png');
-        if (response.ok) {
-            alert('✅ Imagem EXISTE em: imagens/image1.png');
-        } else {
-            alert('❌ Imagem NÃO encontrada! Verifique a pasta imagens/');
-        }
-    } catch (error) {
-        alert('❌ Erro ao acessar imagem: ' + error.message);
-    }
-}
+<!-- PAINÉIS DE INFORMAÇÃO -->
+<div id="historia" class="info-panel">
+    <h3>📖 HISTÓRIA</h3>
+    <p>Lúcio aprendeu a arte da invisibilidade para proteger seus amigos e familiares.</p>
+    <button class="close-btn" onclick="fecharInfo()">FECHAR</button>
+</div>
 
-async function testarAR() {
+<div id="idade" class="info-panel">
+    <h3>🎂 IDADE</h3>
+    <p>18 anos</p>
+    <button class="close-btn" onclick="fecharInfo()">FECHAR</button>
+</div>
+
+<div id="habilidade" class="info-panel">
+    <h3>⚡ HABILIDADE</h3>
+    <p>Invisibilidade Total - 10 minutos</p>
+    <button class="close-btn" onclick="fecharInfo()">FECHAR</button>
+</div>
+
+<script>
+async function iniciarRA() {
     try {
         // Testar câmera
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
         stream.getTracks().forEach(track => track.stop());
         
-        // Mostrar AR
+        // Iniciar AR
         document.getElementById('ar-scene').style.display = 'block';
         document.getElementById('loading').style.display = 'none';
         
-        alert('✅ AR Iniciado! Mostre o marcador Hiro');
     } catch (error) {
-        alert('❌ Erro na câmera: ' + error.message);
+        alert('Erro ao acessar câmera: ' + error.message);
     }
+}
+
+function mostrarInfo(tipo) {
+    document.getElementById(tipo).style.display = 'block';
+}
+
+function fecharInfo() {
+    document.querySelectorAll('.info-panel').forEach(painel => {
+        painel.style.display = 'none';
+    });
+}
+
+// Auto-iniciar em celular
+if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    setTimeout(iniciarRA, 1000);
 }
 </script>
 </body>
